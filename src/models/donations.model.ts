@@ -23,6 +23,12 @@ const dontationsSchema = new Schema<IDonations>(
       type: String,
       required: true,
     },
+    // Add a reference to the Users model
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'Users',
+      required: true,
+    },
   },
   { timestamps: true },
 );
