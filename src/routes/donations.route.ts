@@ -10,5 +10,9 @@ router.post(
   validateRequest(DonationValidationsSchema.createSchema),
   DonationControllers.createDonation,
 );
+router.get('/', DonationControllers.getAllDonations);
+router.get('/:id', DonationControllers.getSingleDonation);
+router.patch('/:id', DonationControllers.updateDonation);
+router.delete('/:id', DonationControllers.deleteDonation);
 
 export const DonationsRoute = router;
