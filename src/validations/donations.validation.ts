@@ -1,6 +1,6 @@
 import { z } from 'zod';
 
-const createSchema = z.object({
+export const donationValidationsSchema = z.object({
   body: z.object({
     title: z.string({
       required_error: 'Title is required.',
@@ -24,7 +24,3 @@ const createSchema = z.object({
     }),
   }),
 });
-
-export const DonationValidationsSchema = {
-  createSchema,
-};
