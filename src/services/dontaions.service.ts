@@ -1,8 +1,19 @@
 import { IDonations } from '../interfaces/donations.interface';
 import { Donations } from '../models/donations.model';
+import { uploadOnCloudinary } from '../utils/uploadOnCloudinary';
 
-const createDonationsFromDB = async (donationsData: IDonations) => {
-  const result = Donations.create(donationsData);
+const createDonationFromDB = async (
+  donationImgPath: string,
+  donationsData: Partial<IDonations>,
+) => {
+  const donationImgURL = await uploadOnCloudinary(donationImgPath);
+
+  const donationObj = {
+    ...donationsData,
+    donationImage: donationImgURL?.secure_url || null,
+  };
+
+  const result = Donations.create(donationObj);
   return result;
 };
 
@@ -31,8 +42,8 @@ const deleteDonationsFromDB = async (donationsId: string) => {
   return result;
 };
 
-export const DonationsServices = {
-  createDonationsFromDB,
+export const DonationServices = {
+  createDonationFromDB,
   getAllDonationsFromDB,
   getSingleDonationFromDB,
   updateDonationFromDB,

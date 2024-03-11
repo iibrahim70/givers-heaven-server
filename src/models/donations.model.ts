@@ -27,7 +27,7 @@ const dontationsSchema = new Schema<IDonations>(
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: 'Users',
-      required: true,
+      required: false,
     },
   },
   { timestamps: true },
