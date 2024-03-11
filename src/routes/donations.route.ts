@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import { DonationControllers } from '../controllers/donations.controller';
-import { upload } from '../middlewares/multer';
-// import { UsersControllers } from '../controllers/users.controller';
+import { validateRequest } from '../middlewares/validateRequest';
+import { DonationValidationsSchema } from '../validations/donations.validation';
 
 const router = Router();
 
 router.post(
   '/create-donation',
-  upload.single('donationImage'),
+  validateRequest(DonationValidationsSchema.createSchema),
   DonationControllers.createDonation,
 );
 

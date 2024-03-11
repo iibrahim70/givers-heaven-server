@@ -1,19 +1,8 @@
 import { IDonations } from '../interfaces/donations.interface';
 import { Donations } from '../models/donations.model';
-import { uploadOnCloudinary } from '../utils/uploadOnCloudinary';
 
-const createDonationFromDB = async (
-  donationImgPath: string,
-  donationsData: Partial<IDonations>,
-) => {
-  const donationImgURL = await uploadOnCloudinary(donationImgPath);
-
-  const donationObj = {
-    ...donationsData,
-    donationImage: donationImgURL?.secure_url || null,
-  };
-
-  const result = Donations.create(donationObj);
+const createDonationFromDB = async (donationsData: IDonations) => {
+  const result = Donations.create(donationsData);
   return result;
 };
 
