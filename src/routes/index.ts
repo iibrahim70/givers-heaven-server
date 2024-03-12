@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { UsersRoute } from './users.route';
 import { DonationsRoute } from './donations.route';
+import { DonationTransactionsRoute } from './donationTransactions.route';
 
 const router = Router();
 
@@ -12,6 +13,10 @@ const routes = [
   {
     path: '/donations',
     route: DonationsRoute,
+  },
+  {
+    path: '/donations',
+    route: DonationTransactionsRoute,
   },
 ];
 
