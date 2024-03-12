@@ -6,7 +6,7 @@ import { sendResponse } from '../utils/sendResponse';
 const createUser = catchAsync(async (req, res) => {
   const userData = req.body;
 
-  const result = await UsersServices.createUsersFromDB(userData);
+  const result = await UsersServices.createUserFromDB(userData);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
