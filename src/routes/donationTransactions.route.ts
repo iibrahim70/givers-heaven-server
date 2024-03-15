@@ -7,5 +7,8 @@ router.post(
   '/donate',
   DonationTransactionsControllers.createDonationTransactions,
 );
-
+router.post(
+  '/yearly-total',
+  DonationTransactionsControllers.getTotalDonationsForYear,
+);
 export const DonationTransactionsRoute = router;

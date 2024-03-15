@@ -19,6 +19,21 @@ const createDonationTransactions = catchAsync(async (req, res) => {
   });
 });
 
+const getTotalDonationsForYear = catchAsync(async (req, res) => {
+  const { year } = req.body;
+
+  const monthlyTotals =
+    await DonationTransactionsServices.getTotalDonationsForYearFromDB(year);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: `Donation totals for the year ${year}`,
+    data: monthlyTotals,
+  });
+});
+
 export const DonationTransactionsControllers = {
   createDonationTransactions,
+  getTotalDonationsForYear,
 };

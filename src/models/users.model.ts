@@ -5,7 +5,7 @@ import bcrypt from 'bcrypt';
 
 const usersSchema = new Schema<IUsers>(
   {
-    fullName: {
+    userName: {
       type: String,
       required: true,
     },
@@ -19,10 +19,6 @@ const usersSchema = new Schema<IUsers>(
       required: true,
     },
     password: {
-      type: String,
-      required: true,
-    },
-    userImg: {
       type: String,
       required: true,
     },

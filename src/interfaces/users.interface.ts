@@ -1,7 +1,6 @@
 export interface IUsers {
-  fullName: string;
+  userName: string;
   phoneNumber: number;
   email: string;
   password: string;
-  userImg: string;
 }

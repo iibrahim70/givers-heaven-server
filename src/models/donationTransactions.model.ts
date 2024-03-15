@@ -17,6 +17,9 @@ const donationTransactionsSchema = new Schema<IDonationTransactions>(
       type: Number,
       required: true,
     },
+    message: {
+      type: String,
+    },
   },
   { timestamps: true },
 );

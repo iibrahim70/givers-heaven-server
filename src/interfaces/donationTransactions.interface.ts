@@ -4,4 +4,5 @@ export interface IDonationTransactions {
   amount: number;
   donationId: ObjectId;
   donatedBy: ObjectId;
+  message?: string;
 }
