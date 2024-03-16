@@ -3,12 +3,19 @@ import { DonationTransactionsControllers } from '../controllers/donationTransact
 
 const router = Router();
 
+// get route
+router.get('/leaderboard', DonationTransactionsControllers.getTopDonors);
+
+// post route
 router.post(
   '/donate',
   DonationTransactionsControllers.createDonationTransactions,
 );
+
+// post and get
 router.post(
-  '/yearly-total',
-  DonationTransactionsControllers.getTotalDonationsForYear,
+  '/monthly-total-donations-for-year',
+  DonationTransactionsControllers.getMonthlyTotalDonationsForYear,
 );
+
 export const DonationTransactionsRoute = router;

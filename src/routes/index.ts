@@ -15,7 +15,7 @@ const routes = [
     route: DonationsRoute,
   },
   {
-    path: '/donations',
+    path: '/donation-transactions',
     route: DonationTransactionsRoute,
   },
 ];

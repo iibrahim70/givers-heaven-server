@@ -5,18 +5,25 @@ import { donationValidationsSchema } from '../validations/donations.validation';
 
 const router = Router();
 
+// get route
+router.get('/:id', DonationControllers.getSingleDonation);
+router.get('/', DonationControllers.getAllDonations);
+
+// post route
 router.post(
   '/create-donation',
   validateRequest(donationValidationsSchema),
   DonationControllers.createDonation,
 );
-router.get('/', DonationControllers.getAllDonations);
-router.get('/:id', DonationControllers.getSingleDonation);
+
+// update route
 router.patch(
   '/:id',
   validateRequest(donationValidationsSchema),
   DonationControllers.updateDonation,
 );
+
+// delete route
 router.delete('/:id', DonationControllers.deleteDonation);
 
 export const DonationsRoute = router;

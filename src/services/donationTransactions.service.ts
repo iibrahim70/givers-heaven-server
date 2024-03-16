@@ -23,7 +23,7 @@ const createDonationTransactionsFromDB = async (
   return result;
 };
 
-const getTotalDonationsForYearFromDB = async (year: number) => {
+const getMonthlyTotalDonationsForYearFromDB = async (year: number) => {
   const monthlyTotals = [];
 
   for (let month = 1; month <= 12; month++) {
@@ -53,7 +53,46 @@ const getTotalDonationsForYearFromDB = async (year: number) => {
   return monthlyTotals;
 };
 
+const getTopDonorsFromDB = async () => {
+  const topDonors = await DonationTransactions.aggregate([
+    {
+      $group: {
+        _id: '$donatedBy', // Group by the user who made the donation
+        totalDonation: { $sum: '$amount' },
+      },
+    },
+    {
+      $lookup: {
+        from: 'users',
+        localField: '_id',
+        foreignField: '_id',
+        as: 'doner',
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        donorName: { $arrayElemAt: ['$doner.userName', 0] }, // Assuming 'userName' is the field for usernames
+        totalDonation: 1,
+      },
+    },
+    {
+      $sort: { totalDonation: -1 }, // Sort in descending order
+    },
+    {
+      $limit: 10, // Get the top 10 donors
+    },
+  ]);
+
+  return topDonors.map((donor, index) => ({
+    rank: index + 1,
+    donorName: donor.donorName,
+    totalDonation: donor.totalDonation,
+  }));
+};
+
 export const DonationTransactionsServices = {
   createDonationTransactionsFromDB,
-  getTotalDonationsForYearFromDB,
+  getMonthlyTotalDonationsForYearFromDB,
+  getTopDonorsFromDB,
 };
