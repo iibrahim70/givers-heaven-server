@@ -3,6 +3,7 @@ import { UserRoutes } from './user.route';
 import { DonationRoutes } from './donation.route';
 import { DonationTransactionRoutes } from './donationTransaction.route';
 import { VolunteerRoutes } from './volunteer.route';
+import { TestimonialRoutes } from './testimonial.route';
 
 const router = Router();
 
@@ -22,6 +23,10 @@ const routes = [
   {
     path: '/volunteers',
     route: VolunteerRoutes,
+  },
+  {
+    path: '/testimonials',
+    route: TestimonialRoutes,
   },
 ];
 

@@ -1,5 +1,5 @@
 export interface IVolunteer {
-  fullname: string;
+  fullName: string;
   email: string;
   phone: number;
   availability: string;

@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const volunteerValidationSchema = z.object({
   body: z.object({
-    fullname: z.string({
+    fullName: z.string({
       required_error: 'Full Name is required.',
       invalid_type_error: 'Full Name must be a string.',
     }),

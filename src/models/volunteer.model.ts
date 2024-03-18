@@ -3,7 +3,7 @@ import { IVolunteer } from '../interfaces/volunteer.interface';
 
 const volunteerSchema = new Schema<IVolunteer>(
   {
-    fullname: {
+    fullName: {
       type: String,
       required: true,
     },
