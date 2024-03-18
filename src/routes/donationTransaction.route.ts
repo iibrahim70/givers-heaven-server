@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { DonationTransactionsControllers } from '../controllers/donationTransactions.controller';
+import { DonationTransactionsControllers } from '../controllers/donationTransaction.controller';
 
 const router = Router();
 
@@ -9,7 +9,7 @@ router.get('/leaderboard', DonationTransactionsControllers.getTopDonors);
 // post route
 router.post(
   '/donate',
-  DonationTransactionsControllers.createDonationTransactions,
+  DonationTransactionsControllers.createDonationTransaction,
 );
 
 // post and get

@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongoose';
 
-export interface IDonations {
+export interface IDonation {
   title: string;
   donationImage: string;
   category: string;

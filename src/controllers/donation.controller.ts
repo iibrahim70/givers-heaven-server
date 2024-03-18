@@ -1,5 +1,5 @@
 import httpStatus from 'http-status';
-import { DonationServices } from '../services/dontaions.service';
+import { DonationServices } from '../services/dontaion.service';
 import { catchAsync } from '../utils/catchAsync';
 import { sendResponse } from '../utils/sendResponse';
 

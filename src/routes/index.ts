@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { UsersRoute } from './users.route';
-import { DonationsRoute } from './donations.route';
-import { DonationTransactionsRoute } from './donationTransactions.route';
+import { UsersRoute } from './user.route';
+import { DonationsRoute } from './donation.route';
+import { DonationTransactionsRoute } from './donationTransaction.route';
 
 const router = Router();
 

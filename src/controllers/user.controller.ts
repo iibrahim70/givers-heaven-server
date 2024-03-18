@@ -1,8 +1,8 @@
 import httpStatus from 'http-status';
-import { UsersServices } from '../services/users.service';
+import { UsersServices } from '../services/user.service';
 import { catchAsync } from '../utils/catchAsync';
 import { sendResponse } from '../utils/sendResponse';
-import { Users } from '../models/users.model';
+import { Users } from '../models/user.model';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import config from '../config';

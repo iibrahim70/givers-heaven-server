@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { DonationControllers } from '../controllers/donations.controller';
+import { DonationControllers } from '../controllers/donation.controller';
 import { validateRequest } from '../middlewares/validateRequest';
-import { donationValidationsSchema } from '../validations/donations.validation';
+import { donationValidationsSchema } from '../validations/donation.validation';
 
 const router = Router();
 

@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
-import { IDonationTransactions } from '../interfaces/donationTransactions.interface';
+import { IDonationTransaction } from '../interfaces/donationTransaction.interface';
 
-const donationTransactionsSchema = new Schema<IDonationTransactions>(
+const donationTransactionsSchema = new Schema<IDonationTransaction>(
   {
     donationId: {
       type: Schema.Types.ObjectId,
@@ -24,7 +24,7 @@ const donationTransactionsSchema = new Schema<IDonationTransactions>(
   { timestamps: true },
 );
 
-export const DonationTransactions = model<IDonationTransactions>(
+export const DonationTransactions = model<IDonationTransaction>(
   'DonationTransactions',
   donationTransactionsSchema,
   'donationTransactions',

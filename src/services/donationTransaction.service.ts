@@ -1,5 +1,5 @@
-import { IDonationTransactions } from '../interfaces/donationTransactions.interface';
-import { DonationTransactions } from '../models/donationTransactions.model';
+import { IDonationTransaction } from '../interfaces/donationTransaction.interface';
+import { DonationTransactions } from '../models/donationTransaction.model';
 
 const MONTHS = [
   'January',
@@ -17,7 +17,7 @@ const MONTHS = [
 ];
 
 const createDonationTransactionsFromDB = async (
-  transactionData: IDonationTransactions,
+  transactionData: IDonationTransaction,
 ) => {
   const result = DonationTransactions.create(transactionData);
   return result;

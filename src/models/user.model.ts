@@ -1,9 +1,9 @@
 import { Schema, model } from 'mongoose';
-import { IUsers } from '../interfaces/users.interface';
+import { IUser } from '../interfaces/user.interface';
 import config from '../config';
 import bcrypt from 'bcrypt';
 
-const usersSchema = new Schema<IUsers>(
+const usersSchema = new Schema<IUser>(
   {
     userName: {
       type: String,
@@ -44,4 +44,4 @@ usersSchema.methods.toJSON = function () {
   return userObject;
 };
 
-export const Users = model<IUsers>('Users', usersSchema);
+export const Users = model<IUser>('Users', usersSchema);

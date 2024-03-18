@@ -1,7 +1,7 @@
-import { IDonations } from '../interfaces/donations.interface';
-import { Donations } from '../models/donations.model';
+import { IDonation } from '../interfaces/donation.interface';
+import { Donations } from '../models/donation.model';
 
-const createDonationFromDB = async (donationsData: IDonations) => {
+const createDonationFromDB = async (donationsData: IDonation) => {
   const result = Donations.create(donationsData);
   return result;
 };
@@ -18,7 +18,7 @@ const getSingleDonationFromDB = async (donationsId: string) => {
 
 const updateDonationFromDB = async (
   donationsId: string,
-  donationsData: IDonations,
+  donationsData: IDonation,
 ) => {
   const result = Donations.findByIdAndUpdate(donationsId, donationsData, {
     new: true,

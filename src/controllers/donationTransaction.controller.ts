@@ -1,9 +1,9 @@
 import httpStatus from 'http-status';
 import { catchAsync } from '../utils/catchAsync';
 import { sendResponse } from '../utils/sendResponse';
-import { DonationTransactionsServices } from '../services/donationTransactions.service';
+import { DonationTransactionsServices } from '../services/donationTransaction.service';
 
-const createDonationTransactions = catchAsync(async (req, res) => {
+const createDonationTransaction = catchAsync(async (req, res) => {
   const transactionData = req.body;
 
   const result =
@@ -47,7 +47,7 @@ const getTopDonors = catchAsync(async (req, res) => {
 });
 
 export const DonationTransactionsControllers = {
-  createDonationTransactions,
+  createDonationTransaction,
   getMonthlyTotalDonationsForYear,
   getTopDonors,
 };
