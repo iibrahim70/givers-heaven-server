@@ -12,7 +12,7 @@ const volunteerSchema = new Schema<IVolunteer>(
       required: true,
     },
     phone: {
-      type: String,
+      type: Number,
       required: true,
     },
     availability: {
