@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 import { IDonation } from '../interfaces/donation.interface';
 
-const dontationsSchema = new Schema<IDonation>(
+const dontationSchema = new Schema<IDonation>(
   {
     title: {
       type: String,
@@ -33,4 +33,4 @@ const dontationsSchema = new Schema<IDonation>(
   { timestamps: true },
 );
 
-export const Donations = model<IDonation>('Donations', dontationsSchema);
+export const Donation = model<IDonation>('Donations', dontationSchema);

@@ -1,5 +1,5 @@
 import { IDonationTransaction } from '../interfaces/donationTransaction.interface';
-import { DonationTransactions } from '../models/donationTransaction.model';
+import { DonationTransaction } from '../models/donationTransaction.model';
 
 const MONTHS = [
   'January',
@@ -19,7 +19,7 @@ const MONTHS = [
 const createDonationTransactionsFromDB = async (
   transactionData: IDonationTransaction,
 ) => {
-  const result = DonationTransactions.create(transactionData);
+  const result = DonationTransaction.create(transactionData);
   return result;
 };
 
@@ -30,7 +30,7 @@ const getMonthlyTotalDonationsForYearFromDB = async (year: number) => {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 1);
 
-    const total = await DonationTransactions.aggregate([
+    const total = await DonationTransaction.aggregate([
       {
         $match: {
           createdAt: { $gte: startDate, $lt: endDate },
@@ -54,7 +54,7 @@ const getMonthlyTotalDonationsForYearFromDB = async (year: number) => {
 };
 
 const getTopDonorsFromDB = async () => {
-  const topDonors = await DonationTransactions.aggregate([
+  const topDonors = await DonationTransaction.aggregate([
     {
       $group: {
         _id: '$donatedBy', // Group by the user who made the donation
@@ -91,7 +91,7 @@ const getTopDonorsFromDB = async () => {
   }));
 };
 
-export const DonationTransactionsServices = {
+export const DonationTransactionServices = {
   createDonationTransactionsFromDB,
   getMonthlyTotalDonationsForYearFromDB,
   getTopDonorsFromDB,

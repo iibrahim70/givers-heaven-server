@@ -1,33 +1,33 @@
 import { IDonation } from '../interfaces/donation.interface';
-import { Donations } from '../models/donation.model';
+import { Donation } from '../models/donation.model';
 
-const createDonationFromDB = async (donationsData: IDonation) => {
-  const result = Donations.create(donationsData);
+const createDonationFromDB = async (donationData: IDonation) => {
+  const result = Donation.create(donationData);
   return result;
 };
 
 const getAllDonationsFromDB = async () => {
-  const result = Donations.find();
+  const result = Donation.find();
   return result;
 };
 
-const getSingleDonationFromDB = async (donationsId: string) => {
-  const result = Donations.findById(donationsId);
+const getSingleDonationFromDB = async (donationId: string) => {
+  const result = Donation.findById(donationId);
   return result;
 };
 
 const updateDonationFromDB = async (
-  donationsId: string,
-  donationsData: IDonation,
+  donationId: string,
+  donationData: IDonation,
 ) => {
-  const result = Donations.findByIdAndUpdate(donationsId, donationsData, {
+  const result = Donation.findByIdAndUpdate(donationId, donationData, {
     new: true,
   });
   return result;
 };
 
-const deleteDonationsFromDB = async (donationsId: string) => {
-  const result = Donations.findByIdAndDelete(donationsId);
+const deleteDonationsFromDB = async (donationId: string) => {
+  const result = Donation.findByIdAndDelete(donationId);
   return result;
 };
 

@@ -1,22 +1,27 @@
 import { Router } from 'express';
-import { UsersRoute } from './user.route';
-import { DonationsRoute } from './donation.route';
-import { DonationTransactionsRoute } from './donationTransaction.route';
+import { UserRoutes } from './user.route';
+import { DonationRoutes } from './donation.route';
+import { DonationTransactionRoutes } from './donationTransaction.route';
+import { VolunteerRoutes } from './volunteer.route';
 
 const router = Router();
 
 const routes = [
   {
     path: '/users',
-    route: UsersRoute,
+    route: UserRoutes,
   },
   {
     path: '/donations',
-    route: DonationsRoute,
+    route: DonationRoutes,
   },
   {
     path: '/donation-transactions',
-    route: DonationTransactionsRoute,
+    route: DonationTransactionRoutes,
+  },
+  {
+    path: '/volunteers',
+    route: VolunteerRoutes,
   },
 ];
 

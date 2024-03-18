@@ -4,9 +4,9 @@ import { catchAsync } from '../utils/catchAsync';
 import { sendResponse } from '../utils/sendResponse';
 
 const createDonation = catchAsync(async (req, res) => {
-  const donationsData = req.body;
+  const donationData = req.body;
 
-  const result = await DonationServices.createDonationFromDB(donationsData);
+  const result = await DonationServices.createDonationFromDB(donationData);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

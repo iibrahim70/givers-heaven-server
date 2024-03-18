@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { DonationControllers } from '../controllers/donation.controller';
 import { validateRequest } from '../middlewares/validateRequest';
-import { donationValidationsSchema } from '../validations/donation.validation';
+import { donationValidationSchema } from '../validations/donation.validation';
 
 const router = Router();
 
@@ -12,18 +12,18 @@ router.get('/', DonationControllers.getAllDonations);
 // post route
 router.post(
   '/create-donation',
-  validateRequest(donationValidationsSchema),
+  validateRequest(donationValidationSchema),
   DonationControllers.createDonation,
 );
 
 // update route
 router.patch(
   '/:id',
-  validateRequest(donationValidationsSchema),
+  validateRequest(donationValidationSchema),
   DonationControllers.updateDonation,
 );
 
 // delete route
 router.delete('/:id', DonationControllers.deleteDonation);
 
-export const DonationsRoute = router;
+export const DonationRoutes = router;

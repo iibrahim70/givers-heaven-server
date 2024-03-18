@@ -1,8 +1,8 @@
 import httpStatus from 'http-status';
-import { UsersServices } from '../services/user.service';
+import { UserServices } from '../services/user.service';
 import { catchAsync } from '../utils/catchAsync';
 import { sendResponse } from '../utils/sendResponse';
-import { Users } from '../models/user.model';
+import { User } from '../models/user.model';
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import config from '../config';
@@ -11,7 +11,7 @@ const createUser = catchAsync(async (req, res) => {
   const userData = req.body;
 
   // Check if the user already exists
-  const existingUser = await Users.findOne({ email: req.body.email });
+  const existingUser = await User.findOne({ email: req.body.email });
 
   if (existingUser) {
     // If user already exists, send a conflict response
@@ -24,7 +24,7 @@ const createUser = catchAsync(async (req, res) => {
   }
 
   // Create the user if not already existing
-  const result = await UsersServices.createUserFromDB(userData);
+  const result = await UserServices.createUserFromDB(userData);
 
   // Send success response with the new user data
   sendResponse(res, {
@@ -39,13 +39,13 @@ const loginUser = catchAsync(async (req, res) => {
   const { email, password } = req.body;
 
   // Find user by email
-  const user = await Users.findOne({ email });
+  const user = await User.findOne({ email });
 
   if (!user) {
     return sendResponse(res, {
       statusCode: httpStatus.UNAUTHORIZED,
       success: false,
-      message: 'Invalid email or password',
+      message: 'Invalid email or password!',
       data: null,
     });
   }
@@ -57,14 +57,14 @@ const loginUser = catchAsync(async (req, res) => {
     return sendResponse(res, {
       statusCode: httpStatus.UNAUTHORIZED,
       success: false,
-      message: 'Invalid email or password',
+      message: 'Invalid email or password!',
       data: null,
     });
   }
 
   // Check if JWT_SECRET is defined
   if (!config.jwtSecret) {
-    throw new Error('JWT secret is not defined');
+    throw new Error('JWT secret is not defined!');
   }
 
   // Create payload for JWT token (user data except password)
@@ -85,7 +85,7 @@ const loginUser = catchAsync(async (req, res) => {
   return sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Login successful',
+    message: 'Login successful!',
     data: {
       token,
       user: payload.user,
@@ -93,7 +93,7 @@ const loginUser = catchAsync(async (req, res) => {
   });
 });
 
-export const UsersControllers = {
+export const UserControllers = {
   createUser,
   loginUser,
 };

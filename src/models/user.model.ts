@@ -3,7 +3,7 @@ import { IUser } from '../interfaces/user.interface';
 import config from '../config';
 import bcrypt from 'bcrypt';
 
-const usersSchema = new Schema<IUser>(
+const userSchema = new Schema<IUser>(
   {
     userName: {
       type: String,
@@ -27,7 +27,7 @@ const usersSchema = new Schema<IUser>(
 );
 
 // pre save middleware
-usersSchema.pre('save', async function (next) {
+userSchema.pre('save', async function (next) {
   // hasing the password and save into db
   this.password = await bcrypt.hash(
     this.password,
@@ -37,11 +37,11 @@ usersSchema.pre('save', async function (next) {
 });
 
 // deleting password field
-usersSchema.methods.toJSON = function () {
+userSchema.methods.toJSON = function () {
   const userObject = this.toObject();
 
   delete userObject.password;
   return userObject;
 };
 
-export const Users = model<IUser>('Users', usersSchema);
+export const User = model<IUser>('Users', userSchema);

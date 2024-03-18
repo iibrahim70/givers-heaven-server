@@ -1,20 +1,20 @@
 import httpStatus from 'http-status';
 import { catchAsync } from '../utils/catchAsync';
 import { sendResponse } from '../utils/sendResponse';
-import { DonationTransactionsServices } from '../services/donationTransaction.service';
+import { DonationTransactionServices } from '../services/donationTransaction.service';
 
 const createDonationTransaction = catchAsync(async (req, res) => {
   const transactionData = req.body;
 
   const result =
-    await DonationTransactionsServices.createDonationTransactionsFromDB(
+    await DonationTransactionServices.createDonationTransactionsFromDB(
       transactionData,
     );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'Donation successful',
+    message: 'Donation successful!',
     data: result,
   });
 });
@@ -23,7 +23,7 @@ const getMonthlyTotalDonationsForYear = catchAsync(async (req, res) => {
   const { year } = req.body;
 
   const monthlyTotals =
-    await DonationTransactionsServices.getMonthlyTotalDonationsForYearFromDB(
+    await DonationTransactionServices.getMonthlyTotalDonationsForYearFromDB(
       year,
     );
 
@@ -36,7 +36,7 @@ const getMonthlyTotalDonationsForYear = catchAsync(async (req, res) => {
 });
 
 const getTopDonors = catchAsync(async (req, res) => {
-  const result = await DonationTransactionsServices.getTopDonorsFromDB();
+  const result = await DonationTransactionServices.getTopDonorsFromDB();
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -46,7 +46,7 @@ const getTopDonors = catchAsync(async (req, res) => {
   });
 });
 
-export const DonationTransactionsControllers = {
+export const DonationTransactionControllers = {
   createDonationTransaction,
   getMonthlyTotalDonationsForYear,
   getTopDonors,

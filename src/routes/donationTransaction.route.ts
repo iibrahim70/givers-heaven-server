@@ -1,21 +1,21 @@
 import { Router } from 'express';
-import { DonationTransactionsControllers } from '../controllers/donationTransaction.controller';
+import { DonationTransactionControllers } from '../controllers/donationTransaction.controller';
 
 const router = Router();
 
 // get route
-router.get('/leaderboard', DonationTransactionsControllers.getTopDonors);
+router.get('/leaderboard', DonationTransactionControllers.getTopDonors);
 
 // post route
 router.post(
   '/donate',
-  DonationTransactionsControllers.createDonationTransaction,
+  DonationTransactionControllers.createDonationTransaction,
 );
 
 // post and get
 router.post(
   '/monthly-total-donations-for-year',
-  DonationTransactionsControllers.getMonthlyTotalDonationsForYear,
+  DonationTransactionControllers.getMonthlyTotalDonationsForYear,
 );
 
-export const DonationTransactionsRoute = router;
+export const DonationTransactionRoutes = router;
