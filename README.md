@@ -35,7 +35,7 @@ This backend repository serves as the core of Giver's Heaven, providing a robust
 
 ## Project Overview
 
-The backend server is designed to provide a RESTful API that interacts with the frontend client of Giver's Heaven. It offers endpoints for managing user authentication, donation posts, statistics generation, and other essential functionalities. The server ensures data integrity, security, and efficient communication with the client-side application.
+The backend server is designed to provide a RESTful API that interacts with the frontend client of Giver's Heaven. It offers endpoints for managing user authentication, donation posts, statistics generation, testimonials, community wall, and other essential functionalities. The server ensures data integrity, security, and efficient communication with the client-side application.
 
 ---
 
@@ -58,7 +58,18 @@ The backend server is designed to provide a RESTful API that interacts with the 
    - Generate monthly donation totals for a given year.
    - Retrieve top donors based on total donation amounts.
 
-4. **Secure APIs:**
+4. **Testimonial Management:**
+
+   - Create, read, update, and delete donor testimonials.
+   - Allow users to post their experiences and feedback.
+
+5. **Community Gratitude Wall:**
+
+   - Enable users to post comments of appreciation and support.
+   - Provide a platform for users to share positive messages.
+
+6. **Secure APIs:**
+
    - Implement middleware for route protection and user authorization.
    - Validate input data to ensure data integrity.
 
