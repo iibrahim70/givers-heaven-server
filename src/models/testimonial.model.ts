@@ -3,6 +3,12 @@ import { ITestimonial } from '../interfaces/testimonial.interface';
 
 const testimonialSchema = new Schema<ITestimonial>(
   {
+    // Add a reference to the Users model
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: 'Users',
+      required: true,
+    },
     fullName: {
       type: String,
       required: true,
@@ -11,11 +17,11 @@ const testimonialSchema = new Schema<ITestimonial>(
       type: String,
       required: true,
     },
-    review: {
+    testimonial: {
       type: String,
       required: true,
     },
-    imageUrl: {
+    userImage: {
       type: String,
       required: true,
     },
@@ -23,4 +29,7 @@ const testimonialSchema = new Schema<ITestimonial>(
   { timestamps: true },
 );
 
-export const Testimonial = model<ITestimonial>('Testimonials', testimonialSchema);
+export const Testimonial = model<ITestimonial>(
+  'Testimonials',
+  testimonialSchema,
+);

@@ -1,6 +1,9 @@
+import { ObjectId } from 'mongoose';
+
 export interface ITestimonial {
+  createdBy: ObjectId;
   fullName: string;
   designation: string;
-  review: string;
-  imageUrl: string;
+  testimonial: string;
+  userImage: string;
 }

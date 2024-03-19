@@ -10,11 +10,11 @@ export const testimonialValidationSchema = z.object({
       required_error: 'Designation is required.',
       invalid_type_error: 'Designation must be a string.',
     }),
-    review: z.string({
-      required_error: 'Review is required.',
-      invalid_type_error: 'Review must be a string.',
+    testimonial: z.string({
+      required_error: 'Testimonial is required.',
+      invalid_type_error: 'Testimonial must be a string.',
     }),
-    imageUrl: z.string({
+    userImage: z.string({
       required_error: 'Image URL is required.',
       invalid_type_error: 'Image URL must be a string.',
     }),
