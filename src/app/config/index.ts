@@ -8,7 +8,8 @@ export default {
   port: process.env.PORT,
   ipAddress: process.env.IP_ADDRESS,
   nodeEnv: process.env.NODE_ENV,
-  corsOrigin: process.env.CORS_ORIGIN,
+  corsOrigin:
+    process.env.CORS_ORIGIN?.split(',').map((origin) => origin.trim()) || [],
 
   // Database Config
   dbURL: process.env.DATABASE_URL,

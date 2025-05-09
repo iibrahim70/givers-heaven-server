@@ -10,15 +10,16 @@ import rateLimit from 'express-rate-limit';
 import { ApiError } from './app/errors/ApiError';
 import httpStatus from 'http-status';
 import config from './app/config';
+import { corsConfig } from './app/utils/corsConfig';
 
 const app = express();
 
 // Middleware setup
-app.use(cors());
+app.use(cors(corsConfig));
 app.use(cookieParser());
 app.use(requestIp.mw());
 
-// Rate limiter to prevent abuse (max 20 requests per 15 minutes)
+// Rate limiter to prevent abuse
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 20,
