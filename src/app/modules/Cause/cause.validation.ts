@@ -1,14 +1,14 @@
 import { z } from 'zod';
 
-export const donationValidationSchema = z.object({
+export const causeValidationSchema = z.object({
   body: z.object({
     title: z.string({
       required_error: 'Title is required.',
       invalid_type_error: 'Title must be a string.',
     }),
-    donationImage: z.string({
-      required_error: 'Donation Image is required.',
-      invalid_type_error: 'Donation Image must be a string.',
+    CauseImage: z.string({
+      required_error: 'Cause Image is required.',
+      invalid_type_error: 'Cause Image must be a string.',
     }),
     category: z.string({
       required_error: 'Category is required.',

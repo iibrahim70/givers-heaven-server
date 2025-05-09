@@ -1,13 +1,13 @@
 import { Schema, model } from 'mongoose';
-import { IDonation } from '../interfaces/donation.interface';
+import { ICause } from './cause.interface';
 
-const dontationSchema = new Schema<IDonation>(
+const causeSchema = new Schema<ICause>(
   {
     title: {
       type: String,
       required: true,
     },
-    donationImage: {
+    CauseImage: {
       type: String,
       required: true,
     },
@@ -33,4 +33,4 @@ const dontationSchema = new Schema<IDonation>(
   { timestamps: true },
 );
 
-export const Donation = model<IDonation>('Donations', dontationSchema);
+export const Cause = model<ICause>('Causes', causeSchema);
