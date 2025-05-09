@@ -9,7 +9,7 @@ const whitelist = config.corsOrigin;
 // CORS options to allow requests only from whitelisted origins
 export const corsConfig: CorsOptions = {
   origin: function (origin, callback) {
-    if (whitelist.indexOf(origin as string) !== -1 || origin) {
+    if (whitelist.indexOf(origin as string) !== -1 || !origin) {
       callback(null, true); // Allow request
     } else {
       callback(

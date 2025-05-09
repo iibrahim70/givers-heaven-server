@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import { Request, Response, NextFunction } from 'express';
 import httpStatus from 'http-status';
 

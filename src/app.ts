@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import express, { Request, Response } from 'express';
@@ -5,7 +7,6 @@ import router from './app/routes';
 import { globalErrorHandler } from './app/middlewares/globalErrorHandler';
 import { notFound } from './app/middlewares/notFound';
 import { requestLogger } from './app/logger/morgan.logger';
-import requestIp from 'request-ip';
 import rateLimit from 'express-rate-limit';
 import { ApiError } from './app/errors/ApiError';
 import httpStatus from 'http-status';
@@ -17,7 +18,6 @@ const app = express();
 // Middleware setup
 app.use(cors(corsConfig));
 app.use(cookieParser());
-app.use(requestIp.mw());
 
 // Rate limiter to prevent abuse
 const limiter = rateLimit({
@@ -47,9 +47,6 @@ const limiter = rateLimit({
 app.use(limiter);
 app.use(express.json({ limit: '16kb' }));
 app.use(express.urlencoded({ extended: true, limit: '16kb' }));
-
-// Serve static files
-app.use(express.static('public'));
 
 // Request logging
 app.use(requestLogger);
