@@ -10,8 +10,7 @@ import { requestLogger } from './app/logger/morgan.logger';
 import rateLimit from 'express-rate-limit';
 import { ApiError } from './app/errors/ApiError';
 import httpStatus from 'http-status';
-import config from './app/config';
-import { corsConfig } from './app/utils/corsConfig';
+import { corsConfig, envConfig } from './app/config';
 
 const app = express();
 
@@ -59,7 +58,7 @@ app.get('/', (req: Request, res: Response) => {
     timestamp: new Date().toISOString(),
     version: 'v2.0.0',
     uptime: process.uptime(),
-    environment: config.nodeEnv,
+    environment: envConfig.nodeEnv,
     databaseStatus: 'connected',
     healthCheck: 'Healthy',
     memoryUsage: process.memoryUsage(),

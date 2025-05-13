@@ -2,7 +2,7 @@ import httpStatus from 'http-status';
 import { catchAsync } from '../../utils/catchAsync';
 import { sendResponse } from '../../utils/sendResponse';
 import { AuthServices } from './auth.service';
-import config from '../../config';
+import { envConfig } from '../../config';
 
 const loginUser = catchAsync(async (req, res) => {
   const result = await AuthServices.loginUserToDB(req?.body);
@@ -13,7 +13,7 @@ const loginUser = catchAsync(async (req, res) => {
 
   // Set refresh token cookie with the appropriate maxAge
   res.cookie('refreshToken', result?.refreshToken, {
-    secure: config.nodeEnv !== 'development',
+    secure: envConfig.nodeEnv !== 'development',
     httpOnly: true,
     sameSite: 'none',
     maxAge,

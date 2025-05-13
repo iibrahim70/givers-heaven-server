@@ -1,10 +1,10 @@
 import { CorsOptions } from 'cors';
 import { ApiError } from '../errors/ApiError';
 import httpStatus from 'http-status';
-import config from '../config';
+import { envConfig } from './env.config';
 
 // whitelist of allowed origins for CORS
-const whitelist = config.corsOrigin;
+const whitelist = envConfig.corsOrigin;
 
 // CORS options to allow requests only from whitelisted origins
 export const corsConfig: CorsOptions = {

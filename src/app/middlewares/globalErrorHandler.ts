@@ -7,9 +7,9 @@ import { handleValidationError } from '../errors/handleValidationError';
 import { handleCastError } from '../errors/handleCastError';
 import { handleDuplicateError } from '../errors/handleDuplicateError';
 import { ApiError } from '../errors/ApiError';
-import config from '../config';
 import httpStatus from 'http-status';
 import { handleZodError } from '../errors/handleZodError';
+import { envConfig } from '../config';
 
 // Error handler middleware for handling global errors
 export const globalErrorHandler: ErrorRequestHandler = (
@@ -88,6 +88,6 @@ export const globalErrorHandler: ErrorRequestHandler = (
     success: false,
     message,
     errorSources,
-    stack: config.nodeEnv === 'development' ? err?.stack : null,
+    stack: envConfig.nodeEnv === 'development' ? err?.stack : null,
   });
 };

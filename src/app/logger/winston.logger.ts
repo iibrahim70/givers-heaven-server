@@ -2,7 +2,7 @@ import path from 'path';
 import { format as formatDate } from 'date-fns';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
-import config from '../config';
+import { envConfig } from '../config';
 
 // Define your severity levels.
 const levels = {
@@ -13,7 +13,7 @@ const levels = {
 };
 
 const level = () => {
-  const isDevelopment = config.nodeEnv === 'development';
+  const isDevelopment = envConfig.nodeEnv === 'development';
   return isDevelopment ? 'http' : 'warn';
 };
 

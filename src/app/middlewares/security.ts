@@ -7,7 +7,7 @@ import cookieParser from 'cookie-parser';
 import rateLimit from 'express-rate-limit';
 import { ApiError } from '../errors/ApiError';
 import httpStatus from 'http-status';
-import { corsConfig } from '../utils/corsConfig';
+import { corsConfig } from '../config/cors.config';
 
 export const securityMiddlewares = [
   helmet(), // Set security headers

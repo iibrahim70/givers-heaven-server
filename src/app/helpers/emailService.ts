@@ -1,8 +1,8 @@
 import nodemailer from 'nodemailer';
-import config from '../config';
 import { ISendEmail } from '../interfaces/sendEmail.interface';
 import { logger } from '../logger/winston.logger';
 import colors from 'colors';
+import { envConfig } from '../config';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -10,15 +10,15 @@ const transporter = nodemailer.createTransport({
   port: 587,
   secure: false,
   auth: {
-    user: config.smtpEmailUser,
-    pass: config.smtpEmailPass,
+    user: envConfig.smtpEmailUser,
+    pass: envConfig.smtpEmailPass,
   },
 });
 
 export const sendEmail = async (payload: ISendEmail) => {
   try {
     const info = await transporter.sendMail({
-      from: config.smtpEmailUser,
+      from: envConfig.smtpEmailUser,
       to: payload.to,
       subject: payload.subject,
       html: payload.html,

@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
 import httpStatus from 'http-status';
 import { JwtPayload } from 'jsonwebtoken';
-import config from '../config';
 import { ApiError } from '../errors/ApiError';
 import { TUserRole } from '../modules/User/user.interface';
 import { verifyJwtToken } from '../helpers/jwtService';
 import { Auth } from '../modules/Auth/auth.model';
 import { catchAsync } from '../utils/catchAsync';
+import { envConfig } from '../config';
 
 export const validateAuth = (...requiredRoles: TUserRole[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -21,7 +21,10 @@ export const validateAuth = (...requiredRoles: TUserRole[]) => {
       const token = bearerToken.split(' ')[1];
 
       // checking if the given token is valid
-      const decoded = verifyJwtToken(token, config.jwtAccessSecret as string);
+      const decoded = verifyJwtToken(
+        token,
+        envConfig.jwtAccessSecret as string,
+      );
 
       // Check if a user with the provided email exists in the database
       const existingUser = await Auth.findById(decoded?.authId);

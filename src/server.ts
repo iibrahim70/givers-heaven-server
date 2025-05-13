@@ -1,18 +1,18 @@
 import mongoose from 'mongoose';
 import app from './app';
-import config from './app/config';
 import { logger } from './app/logger/winston.logger';
 import colors from 'colors';
 import { Server } from 'http';
 import { seedSuperAdmin } from './app/seeds/superAdmin.seeds';
 import { startCronJobs } from './app/cronJobs/startCronJobs';
+import { envConfig } from './app/config';
 
 let server: Server;
 
 async function main() {
   try {
     const connectionInstance = await mongoose.connect(
-      `${config.dbURL}/${config.collectionName}`,
+      `${envConfig.dbURL}/${envConfig.collectionName}`,
     );
 
     // Seed super admin
@@ -27,13 +27,17 @@ async function main() {
       ),
     );
 
-    server = app.listen(Number(config.port), config.ipAddress as string, () => {
-      logger.info(
-        colors.bgGreen.bold(
-          `🚀 Server running on: ${config.ipAddress}:${config.port}`,
-        ),
-      );
-    });
+    server = app.listen(
+      Number(envConfig.port),
+      envConfig.ipAddress as string,
+      () => {
+        logger.info(
+          colors.bgGreen.bold(
+            `🚀 Server running on: ${envConfig.ipAddress}:${envConfig.port}`,
+          ),
+        );
+      },
+    );
   } catch (error) {
     logger.error(colors.bgCyan.bold(`❌ MongoDB connection error: ${error}`));
     process.exit(1);

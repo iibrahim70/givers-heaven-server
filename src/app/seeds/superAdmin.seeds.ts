@@ -1,9 +1,9 @@
-import config from '../config';
 import { logger } from '../logger/winston.logger';
 import colors from 'colors';
 import { Auth } from '../modules/Auth/auth.model';
 import mongoose from 'mongoose';
 import { User } from '../modules/User/user.model';
+import { envConfig } from '../config';
 
 export const seedSuperAdmin = async () => {
   const session = await mongoose.startSession();
@@ -13,7 +13,7 @@ export const seedSuperAdmin = async () => {
 
     // Check if super admin already exists
     const isSuperAdminExists = await Auth.findOne({
-      role: config.superAdminRole,
+      role: envConfig.superAdminRole,
     });
 
     if (isSuperAdminExists) {
@@ -29,9 +29,9 @@ export const seedSuperAdmin = async () => {
     const auth = await Auth.create(
       [
         {
-          email: config.superAdminEmail,
-          password: config.superAdminPassword,
-          role: config.superAdminRole,
+          email: envConfig.superAdminEmail,
+          password: envConfig.superAdminPassword,
+          role: envConfig.superAdminRole,
         },
       ],
       { session },
@@ -42,7 +42,7 @@ export const seedSuperAdmin = async () => {
       [
         {
           authId: auth[0]?._id,
-          name: config.superAdminName,
+          name: envConfig.superAdminName,
         },
       ],
       { session },
