@@ -1,11 +1,11 @@
 import mongoose from 'mongoose';
 import app from './app';
-import { logger } from './app/logger/winston.logger';
 import colors from 'colors';
 import { Server } from 'http';
 import { seedSuperAdmin } from './app/seeds/superAdmin.seeds';
 import { startCronJobs } from './app/cronJobs/startCronJobs';
 import { envConfig } from './app/config';
+import { winstonLogger } from './app/logger';
 
 let server: Server;
 
@@ -21,7 +21,7 @@ async function main() {
     // Start all cron jobs
     startCronJobs();
 
-    logger.info(
+    winstonLogger.info(
       colors.bgGreen.bold(
         `✅ Database Connected! Host: ${connectionInstance?.connection?.host}`,
       ),
@@ -31,7 +31,7 @@ async function main() {
       Number(envConfig.port),
       envConfig.ipAddress as string,
       () => {
-        logger.info(
+        winstonLogger.info(
           colors.bgGreen.bold(
             `🚀 Server running on: ${envConfig.ipAddress}:${envConfig.port}`,
           ),
@@ -39,7 +39,9 @@ async function main() {
       },
     );
   } catch (error) {
-    logger.error(colors.bgCyan.bold(`❌ MongoDB connection error: ${error}`));
+    winstonLogger.error(
+      colors.bgCyan.bold(`❌ MongoDB connection error: ${error}`),
+    );
     process.exit(1);
   }
 }
@@ -47,7 +49,7 @@ async function main() {
 main();
 
 process.on('unhandledRejection', (error) => {
-  logger.error(
+  winstonLogger.error(
     colors.bgYellow.bold(`⚠️ Unhandled rejection, shutting down... ${error}`),
   );
 
@@ -60,7 +62,7 @@ process.on('unhandledRejection', (error) => {
 });
 
 process.on('uncaughtException', (error) => {
-  logger.error(
+  winstonLogger.error(
     colors.bgRed.bold(`❌ Uncaught exception: ${error}, shutting down...`),
   );
   process.exit(1);

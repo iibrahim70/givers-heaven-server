@@ -1,54 +1,21 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import express, { Request, Response } from 'express';
 import router from './app/routes';
 import { globalErrorHandler } from './app/middlewares/globalErrorHandler';
 import { notFound } from './app/middlewares/notFound';
-import { requestLogger } from './app/logger/morgan.logger';
-import rateLimit from 'express-rate-limit';
-import { ApiError } from './app/errors/ApiError';
-import httpStatus from 'http-status';
-import { corsConfig, envConfig } from './app/config';
+import { corsConfig, envConfig, rateLimiter } from './app/config';
+import { morganLogger } from './app/logger';
 
 const app = express();
 
 // Middleware setup
-app.use(cors(corsConfig));
-app.use(cookieParser());
-
-// Rate limiter to prevent abuse
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (req, res) => {
-    if (!req.clientIp) {
-      throw new ApiError(
-        httpStatus.BAD_REQUEST,
-        'Unable to determine client IP!',
-      );
-    }
-
-    return req.clientIp;
-  },
-  handler: (req, res, next, options) => {
-    throw new ApiError(
-      options?.statusCode,
-      `Rate limit exceeded. Try again in ${options.windowMs / 60000} minutes.`,
-    );
-  },
-});
-
-// Apply rate limiter and setup body parsers
-app.use(limiter);
-app.use(express.json({ limit: '16kb' }));
-app.use(express.urlencoded({ extended: true, limit: '16kb' }));
-
-// Request logging
-app.use(requestLogger);
+app.use(cors(corsConfig)); // Enable CORS with custom config
+app.use(cookieParser()); // Parse cookies from incoming requests
+app.use(rateLimiter); // Apply rate limiting
+app.use(express.json({ limit: '16kb' })); // Parse JSON body with size limit
+app.use(express.urlencoded({ extended: true, limit: '16kb' })); // Parse URL-encoded data
+app.use(morganLogger); // Log all incoming requests
 
 // Root route - API status check
 app.get('/', (req: Request, res: Response) => {

@@ -79,7 +79,7 @@ const transports = [
 ];
 
 // Create a logger instance
-export const logger = winston.createLogger({
+export const winstonLogger = winston.createLogger({
   levels,
   level: level(),
   format: myLogFormat,

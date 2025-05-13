@@ -1,8 +1,8 @@
 import nodemailer from 'nodemailer';
 import { ISendEmail } from '../interfaces/sendEmail.interface';
-import { logger } from '../logger/winston.logger';
 import colors from 'colors';
 import { envConfig } from '../config';
+import { winstonLogger } from '../logger';
 
 const transporter = nodemailer.createTransport({
   service: 'gmail',
@@ -23,10 +23,10 @@ export const sendEmail = async (payload: ISendEmail) => {
       subject: payload.subject,
       html: payload.html,
     });
-    logger.info(
+    winstonLogger.info(
       colors.bgGreen(`✅ Email successfully sent to: ${info?.accepted}`),
     );
   } catch (error) {
-    logger.error(colors.bgRed(`❌ Email sending failed: ${error}`));
+    winstonLogger.error(colors.bgRed(`❌ Email sending failed: ${error}`));
   }
 };

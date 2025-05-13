@@ -1,7 +1,6 @@
 import httpStatus from 'http-status';
 import { ApiError } from '../../errors/ApiError';
 import bcrypt from 'bcrypt';
-import config from '../../config';
 import { User } from '../User/user.model';
 import { createJwtToken, verifyJwtToken } from '../../helpers/jwtService';
 import { JwtPayload } from 'jsonwebtoken';
@@ -16,6 +15,7 @@ import {
   VERIFICATION_TYPE,
 } from '../Verification/verification.constant';
 import { TVerificationType } from '../Verification/verification.interface';
+import { envConfig } from '../../config';
 
 const loginUserToDB = async (payload: {
   email: string;
@@ -67,14 +67,14 @@ const loginUserToDB = async (payload: {
 
   const accessToken = createJwtToken(
     jwtPayload,
-    config.jwtAccessSecret as string,
-    config.jwtAccessExpiresIn as string,
+    envConfig.jwtAccessSecret as string,
+    envConfig.jwtAccessExpiresIn as string,
   );
 
   const refreshToken = createJwtToken(
     jwtPayload,
-    config.jwtRefreshSecret as string,
-    config.jwtRefreshExpiresIn as string,
+    envConfig.jwtRefreshSecret as string,
+    envConfig.jwtRefreshExpiresIn as string,
   );
 
   return {
@@ -178,7 +178,7 @@ const resetPasswordToDB = async (
 
   const decoded = verifyJwtToken(
     token,
-    config.jwtAccessSecret as string,
+    envConfig.jwtAccessSecret as string,
   ) as JwtPayload;
 
   // Fetch user info
@@ -209,10 +209,10 @@ const resetPasswordToDB = async (
     );
   }
 
-  // Hash the new password using bcrypt with the configured salt rounds
+  // Hash the new password using bcrypt with the envConfigured salt rounds
   const hashPassword = await bcrypt.hash(
     payload?.newPassword,
-    Number(config.bcryptSaltRounds),
+    Number(envConfig.bcryptSaltRounds),
   );
 
   await User.findByIdAndUpdate(existingUser?._id, {
@@ -256,7 +256,7 @@ const changePasswordToDB = async (
   // Hash the new password before saving
   const hashPassword = await bcrypt.hash(
     newPassword,
-    Number(config.bcryptSaltRounds),
+    Number(envConfig.bcryptSaltRounds),
   );
 
   // Update user with new password
@@ -365,8 +365,8 @@ const verifyOtpToDB = async (payload: {
 
     const accessToken = createJwtToken(
       jwtPayload,
-      config.jwtAccessSecret as string,
-      config.jwtAccessExpiresIn as string,
+      envConfig.jwtAccessSecret as string,
+      envConfig.jwtAccessExpiresIn as string,
     );
 
     return {
@@ -383,7 +383,7 @@ const issueNewAccessToken = async (token: string) => {
   }
 
   // checking if the given token is valid
-  const decoded = verifyJwtToken(token, config.jwtRefreshSecret as string);
+  const decoded = verifyJwtToken(token, envConfig.jwtRefreshSecret as string);
 
   // Fetch user info
   const existingUser = await Auth.isUserExistsByEmail(decoded?.email);
@@ -419,8 +419,8 @@ const issueNewAccessToken = async (token: string) => {
 
   const accessToken = createJwtToken(
     jwtPayload,
-    config.jwtAccessSecret as string,
-    config.jwtAccessExpiresIn as string,
+    envConfig.jwtAccessSecret as string,
+    envConfig.jwtAccessExpiresIn as string,
   );
 
   return {

@@ -2,7 +2,7 @@ import { model, Schema } from 'mongoose';
 import { AuthModel, IAuth } from './auth.interface';
 import { USER_ROLE, USER_STATUS } from '../User/user.constant';
 import bcrypt from 'bcrypt';
-import config from '../../config';
+import { envConfig } from '../../config';
 
 // Define the schema for the Auth model
 const authSchema = new Schema<IAuth, AuthModel>(
@@ -54,7 +54,7 @@ authSchema.pre('save', async function (next) {
   // Only hash if password is new or changed
   this.password = await bcrypt.hash(
     this.password,
-    Number(config.bcryptSaltRounds),
+    Number(envConfig.bcryptSaltRounds),
   );
 
   next();

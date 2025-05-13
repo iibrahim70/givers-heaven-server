@@ -1,9 +1,9 @@
-import { logger } from '../logger/winston.logger';
 import colors from 'colors';
 import { Auth } from '../modules/Auth/auth.model';
 import mongoose from 'mongoose';
 import { User } from '../modules/User/user.model';
 import { envConfig } from '../config';
+import { winstonLogger } from '../logger';
 
 export const seedSuperAdmin = async () => {
   const session = await mongoose.startSession();
@@ -17,7 +17,7 @@ export const seedSuperAdmin = async () => {
     });
 
     if (isSuperAdminExists) {
-      logger.warn(
+      winstonLogger.warn(
         colors.bgYellow.bold(
           '⚠️ Super admin already exists, no need to create!',
         ),
@@ -49,10 +49,14 @@ export const seedSuperAdmin = async () => {
     );
 
     await session.commitTransaction();
-    logger.info(colors.bgGreen.bold('✅ Super admin created successfully!'));
+    winstonLogger.info(
+      colors.bgGreen.bold('✅ Super admin created successfully!'),
+    );
   } catch (error) {
     await session.abortTransaction();
-    logger.error(colors.bgRed.bold(`❌ Error seeding super admin:, ${error}`));
+    winstonLogger.error(
+      colors.bgRed.bold(`❌ Error seeding super admin:, ${error}`),
+    );
   } finally {
     await session.endSession();
   }

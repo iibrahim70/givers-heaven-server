@@ -1,11 +1,11 @@
 import morgan from 'morgan';
-import { logger } from './winston.logger';
+import { winstonLogger } from './winston.logger';
 
 // Define a custom Morgan format
 const morganFormat = ':method :url :status :response-time ms';
 
 // Create a Morgan middleware instance and assign it to a variable
-export const requestLogger = morgan(morganFormat, {
+export const morganLogger = morgan(morganFormat, {
   stream: {
     write: (message) => {
       const [method, url, status, responseTime] = message.trim().split(' ');
@@ -19,7 +19,7 @@ export const requestLogger = morgan(morganFormat, {
       };
 
       // Log the object as a JSON string
-      return logger.http(JSON.stringify(logObject));
+      return winstonLogger.http(JSON.stringify(logObject));
     },
   },
 });
