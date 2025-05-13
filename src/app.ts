@@ -6,16 +6,19 @@ import { globalErrorHandler } from './app/middlewares/globalErrorHandler';
 import { notFound } from './app/middlewares/notFound';
 import { corsConfig, envConfig, rateLimiter } from './app/config';
 import { morganLogger } from './app/logger';
+import helmet from 'helmet';
+import hpp from 'hpp';
 
 const app = express();
 
 // Middleware setup
-app.use(cors(corsConfig)); // Enable CORS with custom config
-app.use(cookieParser()); // Parse cookies from incoming requests
-app.use(rateLimiter); // Apply rate limiting
-app.use(express.json({ limit: '16kb' })); // Parse JSON body with size limit
-app.use(express.urlencoded({ extended: true, limit: '16kb' })); // Parse URL-encoded data
-app.use(morganLogger); // Log all incoming requests
+app.use(cors(corsConfig)); // CORS
+app.use(cookieParser()); // Cookie parsing
+app.use(rateLimiter); // Rate limiting
+app.use(helmet({ contentSecurityPolicy: false })); // Security headers
+app.use(hpp()); // Prevent HTTP parameter pollution
+app.use(express.json({ limit: '16kb' })); // JSON body parser
+app.use(morganLogger); // Request logging
 
 // Root route - API status check
 app.get('/', (req: Request, res: Response) => {
