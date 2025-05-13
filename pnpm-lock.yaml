@@ -108,9 +108,6 @@ importers:
       '@types/nodemailer':
         specifier: ^6.4.17
         version: 6.4.17
-      '@types/request-ip':
-        specifier: ^0.0.41
-        version: 0.0.41
       eslint:
         specifier: ^9.26.0
         version: 9.26.0
@@ -306,9 +303,6 @@ packages:
 
   '@types/range-parser@1.2.7':
     resolution: {integrity: sha512-hKormJbkJqzQGhziax5PItDUTMAM9uE2XXQmM37dyd4hVM+5aVl7oVxMVUiVQn2oCQFN/LKCZdvSM0pFRqbSmQ==}
-
-  '@types/request-ip@0.0.41':
-    resolution: {integrity: sha512-Qzz0PM2nSZej4lsLzzNfADIORZhhxO7PED0fXpg4FjXiHuJ/lMyUg+YFF5q8x9HPZH3Gl6N+NOM8QZjItNgGKg==}
 
   '@types/send@0.17.4':
     resolution: {integrity: sha512-x2EM6TJOybec7c52BX0ZspPodMsQUd5L6PRwOunVyVUhXiBSKf3AezDL8Dgvgt5o0UfKNfuA0eMLr2wLT4AiBA==}
@@ -1704,10 +1698,6 @@ snapshots:
   '@types/qs@6.9.18': {}
 
   '@types/range-parser@1.2.7': {}
-
-  '@types/request-ip@0.0.41':
-    dependencies:
-      '@types/node': 22.15.17
 
   '@types/send@0.17.4':
     dependencies:
