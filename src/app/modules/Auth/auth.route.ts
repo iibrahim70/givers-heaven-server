@@ -17,6 +17,8 @@ router.post('/verify-email', AuthControllers.verifyEmail);
 
 router.post('/forgot-password', AuthControllers.forgotPassword);
 
+router.post('/verify-otp', AuthControllers.verifyOtp);
+
 router.post('/reset-password', AuthControllers.resetPassword);
 
 router.post(
@@ -24,8 +26,6 @@ router.post(
   validateAuth(USER_ROLE.USER, USER_ROLE.ADMIN, USER_ROLE['SUPER-ADMIN']),
   AuthControllers.changePassword,
 );
-
-router.post('/verify-otp', AuthControllers.verifyOtp);
 
 router.post('/refresh-token', AuthControllers.issueNewAccessToken);
 

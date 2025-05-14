@@ -49,6 +49,17 @@ const forgotPassword = catchAsync(async (req, res) => {
   });
 });
 
+const verifyOtp = catchAsync(async (req, res) => {
+  const result = await AuthServices.verifyOtpToDB(req?.body);
+
+  return sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: result?.message,
+    data: { accessToken: result?.accessToken },
+  });
+});
+
 const resetPassword = catchAsync(async (req, res) => {
   const result = await AuthServices.resetPasswordToDB(
     req?.headers?.authorization as string,
@@ -74,17 +85,6 @@ const changePassword = catchAsync(async (req, res) => {
   });
 });
 
-const verifyOtp = catchAsync(async (req, res) => {
-  const result = await AuthServices.verifyOtpToDB(req?.body);
-
-  return sendResponse(res, {
-    statusCode: httpStatus.OK,
-    success: true,
-    message: result?.message,
-    data: { accessToken: result?.accessToken },
-  });
-});
-
 const issueNewAccessToken = catchAsync(async (req, res) => {
   const result = await AuthServices.issueNewAccessToken(
     req?.cookies?.refreshToken,
@@ -99,11 +99,11 @@ const issueNewAccessToken = catchAsync(async (req, res) => {
 });
 
 export const AuthControllers = {
-  verifyEmail,
   loginUser,
+  verifyEmail,
   forgotPassword,
+  verifyOtp,
   resetPassword,
   changePassword,
-  verifyOtp,
   issueNewAccessToken,
 };
