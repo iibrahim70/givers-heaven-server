@@ -1,6 +1,5 @@
 import { Router } from 'express';
 import { CauseRoutes } from '../modules/Cause/cause.route';
-import { DonationTransactionRoutes } from './donationTransaction.route';
 import { VolunteerRoutes } from '../modules/Volunteer/volunteer.route';
 import { TestimonialRoutes } from '../modules/Testimonial/testimonial.route';
 import { UserRoutes } from '../modules/User/user.route';
@@ -15,10 +14,6 @@ const routes = [
   {
     path: '/causes',
     route: CauseRoutes,
-  },
-  {
-    path: '/donation-transactions',
-    route: DonationTransactionRoutes,
   },
   {
     path: '/volunteers',
