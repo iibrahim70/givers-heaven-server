@@ -1,6 +1,7 @@
 import httpStatus from 'http-status';
 import { ApiError } from '../errors/ApiError';
 import { IAuth } from '../modules/Auth/auth.interface';
+import { Auth } from '../modules/Auth/auth.model';
 
 const ensureUserExists = (user: IAuth) => {
   if (!user) {
@@ -29,8 +30,27 @@ const ensureUserIsNotBlocked = (isBlocked: IAuth['isBlocked']) => {
   }
 };
 
+const ensureTokenNotExpiredDueToPasswordChange = async (
+  passwordChangedAt: IAuth['passwordChangedAt'],
+  tokenIssuedAt: number,
+) => {
+  if (
+    passwordChangedAt &&
+    (await Auth.isJWTIssuedBeforePasswordChanged(
+      passwordChangedAt,
+      tokenIssuedAt,
+    ))
+  ) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      'Session expired due to password change.',
+    );
+  }
+};
+
 export const UserValidators = {
   ensureUserExists,
   ensureUserIsVerified,
   ensureUserIsNotBlocked,
+  ensureTokenNotExpiredDueToPasswordChange,
 };

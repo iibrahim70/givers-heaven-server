@@ -1,5 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+
 import jwt, { JwtPayload, Secret, SignOptions } from 'jsonwebtoken';
 import { randomBytes } from 'crypto';
+import { ApiError } from '../errors/ApiError';
+import httpStatus from 'http-status';
 
 // Function to create JWT token
 export const createJwtToken = (
@@ -12,7 +16,14 @@ export const createJwtToken = (
 
 // Function to verify JWT token
 export const verifyJwtToken = (token: string, secret: Secret) => {
-  return jwt.verify(token, secret) as JwtPayload;
+  try {
+    return jwt.verify(token, secret) as JwtPayload;
+  } catch (error) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      'Access token is expired or invalid.',
+    );
+  }
 };
 
 // Function to generate a random hex token

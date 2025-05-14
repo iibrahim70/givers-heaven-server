@@ -247,10 +247,7 @@ const resetPasswordToDB = async (
     throw new ApiError(httpStatus.UNAUTHORIZED, 'You are not authorized!');
   }
 
-  const decoded = verifyJwtToken(
-    token,
-    envConfig.jwtAccessSecret as string,
-  ) as JwtPayload;
+  const decoded = verifyJwtToken(token, envConfig.jwtAccessSecret as string);
 
   // Fetch user info
   const existingUser = await Auth.isUserExistsByEmail(decoded?.email);
@@ -349,28 +346,12 @@ const issueNewAccessToken = async (token: string) => {
   // Fetch user info
   const existingUser = await Auth.isUserExistsByEmail(decoded?.email);
 
-  // Handle case where no User is found
-  if (!existingUser) {
-    throw new ApiError(
-      httpStatus.NOT_FOUND,
-      'User with this email does not exist!',
-    );
-  }
-
-  // If the user is blocked, throw a FORBIDDEN error.
-  if (existingUser?.isBlocked) {
-    throw new ApiError(httpStatus.FORBIDDEN, 'User account is blocked!');
-  }
-
-  if (
-    existingUser?.passwordChangedAt &&
-    (await Auth.isJWTIssuedBeforePasswordChanged(
-      existingUser?.passwordChangedAt,
-      decoded?.iat as number,
-    ))
-  ) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'You are not authorized!');
-  }
+  UserValidators.ensureUserExists(existingUser);
+  UserValidators.ensureUserIsNotBlocked(existingUser?.isBlocked);
+  UserValidators.ensureTokenNotExpiredDueToPasswordChange(
+    existingUser.passwordChangedAt,
+    decoded.iat as number,
+  );
 
   const jwtPayload = {
     userId: existingUser?._id,

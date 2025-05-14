@@ -48,18 +48,10 @@ export const validateAuth = (...requiredRoles: TUserRole[]) => {
     UserValidators.ensureUserIsNotBlocked(existingUser.isBlocked);
 
     // Step 6: Check if password was changed after token was issued
-    if (
-      existingUser.passwordChangedAt &&
-      (await Auth.isJWTIssuedBeforePasswordChanged(
-        existingUser?.passwordChangedAt,
-        decoded?.iat as number,
-      ))
-    ) {
-      throw new ApiError(
-        httpStatus.UNAUTHORIZED,
-        'Session expired due to password change.',
-      );
-    }
+    UserValidators.ensureTokenNotExpiredDueToPasswordChange(
+      existingUser.passwordChangedAt,
+      decoded.iat as number,
+    );
 
     // Step 7: Verify role access
     if (requiredRoles && !requiredRoles.includes(decoded?.role)) {
