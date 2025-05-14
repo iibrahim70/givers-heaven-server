@@ -2,7 +2,7 @@ import httpStatus from 'http-status';
 import { ApiError } from '../../errors/ApiError';
 import bcrypt from 'bcrypt';
 import { User } from '../User/user.model';
-import { createJwtToken, verifyJwtToken } from '../../helpers/jwtService';
+import { createJwtToken, verifyJwtToken } from '../../utils/jwt';
 import { JwtPayload } from 'jsonwebtoken';
 import path from 'path';
 import { sendEmail } from '../../helpers/emailService';
@@ -14,39 +14,22 @@ import {
   VERIFICATION_STATUS,
   VERIFICATION_TYPE,
 } from '../Verification/verification.constant';
-import { TVerificationType } from '../Verification/verification.interface';
 import { envConfig } from '../../config';
+import { UserValidators } from '../../validators/user.validators';
+import {
+  ILoginUserPayload,
+  ISendVerificationOtpPayload,
+  IVerifyOtpToPayload,
+} from './auth.interface';
+import { VerificationValidators } from '../../validators/verification.validators';
 
-const loginUserToDB = async (payload: {
-  email: string;
-  password: string;
-  rememberMe?: boolean;
-}) => {
-  const { email, password } = payload;
-
+const loginUserToDB = async ({ email, password }: ILoginUserPayload) => {
   // Check if the user exists with the given email
   const existingUser = await Auth.isUserExistsByEmail(email);
 
-  if (!existingUser) {
-    throw new ApiError(
-      httpStatus.NOT_FOUND,
-      'User with this email does not exist!',
-    );
-  }
-
-  if (!existingUser?.isVerified) {
-    throw new ApiError(
-      httpStatus.FORBIDDEN,
-      'Please verify your email before logging in.',
-    );
-  }
-
-  if (existingUser?.isBlocked) {
-    throw new ApiError(
-      httpStatus.FORBIDDEN,
-      'Your account is blocked. Please contact support.',
-    );
-  }
+  UserValidators.ensureUserExists(existingUser);
+  UserValidators.ensureUserIsVerified(existingUser.isVerified);
+  UserValidators.ensureUserIsNotBlocked(existingUser.isBlocked);
 
   // Verify the provided password
   const isPasswordValid = await Auth.isPasswordMatched(
@@ -83,87 +66,189 @@ const loginUserToDB = async (payload: {
   };
 };
 
-const sendVerificationOtpToDB = async (payload: {
-  email: string;
-  verificationType: TVerificationType;
-}) => {
-  const { email, verificationType } = payload;
+const sendVerificationOtpToDB = async ({
+  email,
+  verificationType,
+}: ISendVerificationOtpPayload) => {
+  // Step 1: Validate inputs
+  if (!email || !verificationType) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'Email and verification type are required.',
+    );
+  }
 
-  // Fetch user info
+  // Step 2: Fetch user by email
   const existingAuth = await Auth.isUserExistsByEmail(email);
+
+  UserValidators.ensureUserExists(existingAuth);
+  UserValidators.ensureUserIsNotBlocked(existingAuth?.isBlocked);
+
   const existingUser = await User.findOne({ authId: existingAuth?._id });
 
-  if (!existingAuth) {
-    throw new ApiError(
-      httpStatus.NOT_FOUND,
-      'User with this email does not exist!',
-    );
-  }
+  // Step 3: Validate verification type
+  VerificationValidators.ensureSupportedVerificationType(verificationType);
 
-  // Validate verification type
-  const validTypes = [
-    VERIFICATION_TYPE['email-verify'],
-    VERIFICATION_TYPE['password-reset'],
-  ];
-
-  if (!validTypes.includes(verificationType)) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      'Unsupported verification type provided.',
-    );
-  }
-
-  // Prevent re-verification if already verified
-  if (
+  // Step 4: Prevent redundant email verification
+  const isAlreadyVerified =
     verificationType === VERIFICATION_TYPE['email-verify'] &&
-    existingAuth?.isVerified
-  ) {
+    existingAuth.isVerified;
+
+  if (isAlreadyVerified) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
-      'This email address has already been verified.',
+      'This email has already been verified.',
     );
   }
 
-  // Generate OTP and set expiration time (5 mins)
+  // Step 5: Generate OTP and expiration (5 mins)
   const otp = generateOtp();
-  const expireAt = new Date(Date.now() + 5 * 60 * 1000);
+  const expireAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
 
-  // Choose appropriate template and subject
+  // Step 6: Prepare email template and subject
   const isEmailVerification =
     verificationType === VERIFICATION_TYPE['email-verify'];
 
-  const templateFile = isEmailVerification
+  const templateFileName = isEmailVerification
     ? 'verifyEmailTemplate.ejs'
     : 'forgotPasswordTemplate.ejs';
 
-  const subject = isEmailVerification
-    ? 'Verify Your Email Address - Portfolio'
-    : 'Reset Your Password - Portfolio';
+  const emailSubject = isEmailVerification
+    ? 'Verify Your Email Address - Givers Heaven'
+    : 'Reset Your Password - Givers Heaven';
 
   const templatePath = path.join(
     process.cwd(),
     'src',
     'app',
     'templates',
-    templateFile,
+    templateFileName,
   );
 
-  // Render HTML from template
   const html = await ejs.renderFile(templatePath, {
-    name: existingUser?.name,
+    name: existingUser?.name ?? 'User',
     otp,
   });
 
-  // Send email
-  await sendEmail({ to: existingAuth?.email, subject, html });
+  // Step 7: Send email
+  await sendEmail({ to: existingAuth?.email, subject: emailSubject, html });
 
-  // Save OTP to verification collection
+  // Step 8: Store OTP in verification collection
   await Verification.create({
     authId: existingAuth?._id,
     otp,
     expireAt,
     type: verificationType,
   });
+};
+
+const verifyOtpToDB = async ({
+  email,
+  otp,
+  verificationType,
+}: IVerifyOtpToPayload) => {
+  // Fetch user info
+  const existingUser = await Auth.isUserExistsByEmail(email);
+
+  const verificationRecord = await Verification.findOne({
+    authId: existingUser?._id,
+    type: verificationType,
+  }).sort({ createdAt: -1 });
+
+  // Handle case where the user does not exist
+  if (!existingUser) {
+    throw new ApiError(
+      httpStatus.NOT_FOUND,
+      'User with this email does not exist!',
+    );
+  }
+
+  // Validate OTP input
+  if (!otp) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'OTP is required. Please check your email for the code!',
+    );
+  }
+
+  // Validate verification type
+  const supportedTypes = [
+    VERIFICATION_TYPE['email-verify'],
+    VERIFICATION_TYPE['password-reset'],
+  ];
+
+  if (!supportedTypes.includes(verificationType)) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'Unsupported verification type provided.',
+    );
+  }
+
+  if (!verificationRecord) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      'OTP is invalid or has expired. Please request a new one!',
+    );
+  }
+
+  // Match the OTP
+  if (verificationRecord?.otp !== otp) {
+    throw new ApiError(
+      httpStatus.UNAUTHORIZED,
+      'Incorrect OTP. Please check and try again!',
+    );
+  }
+
+  // If email verification
+  if (verificationType === VERIFICATION_TYPE['email-verify']) {
+    if (existingUser?.isVerified) {
+      throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already verified!');
+    }
+
+    // Mark user as verified
+    await Auth.findByIdAndUpdate(existingUser?._id, { isVerified: true });
+
+    // Update verification status
+    await Verification.findByIdAndUpdate(verificationRecord?._id, {
+      status: VERIFICATION_STATUS.verified,
+      verifiedAt: new Date(),
+    });
+
+    return {
+      message: 'Email verified successfully!',
+    };
+  }
+
+  // If password reset
+  if (verificationType === VERIFICATION_TYPE['password-reset']) {
+    if (!existingUser?.isVerified) {
+      throw new ApiError(httpStatus.FORBIDDEN, 'User account is not verified!');
+    }
+
+    // Allow password reset – no need to mark as verified again
+    await Verification.findByIdAndUpdate(verificationRecord?._id, {
+      status: VERIFICATION_STATUS.verified,
+      verifiedAt: new Date(),
+    });
+
+    // Generate access token for resetting password
+    const jwtPayload = {
+      authId: existingUser?._id,
+      email: existingUser?.email,
+      role: existingUser?.role,
+    };
+
+    const accessToken = createJwtToken(
+      jwtPayload,
+      envConfig.jwtAccessSecret as string,
+      envConfig.jwtAccessExpiresIn as string,
+    );
+
+    return {
+      message: 'OTP verified successfully for password reset.',
+      accessToken,
+    };
+  }
 };
 
 const resetPasswordToDB = async (
@@ -266,116 +351,6 @@ const changePasswordToDB = async (
   });
 };
 
-const verifyOtpToDB = async (payload: {
-  email: string;
-  otp: number;
-  verificationType: TVerificationType;
-}) => {
-  const { email, otp, verificationType } = payload;
-
-  // Fetch user info
-  const existingUser = await Auth.isUserExistsByEmail(email);
-  const verificationRecord = await Verification.findOne({
-    authId: existingUser?._id,
-    type: verificationType,
-  }).sort({ createdAt: -1 });
-
-  // Handle case where the user does not exist
-  if (!existingUser) {
-    throw new ApiError(
-      httpStatus.NOT_FOUND,
-      'User with this email does not exist!',
-    );
-  }
-
-  // Validate OTP input
-  if (!otp) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      'OTP is required. Please check your email for the code!',
-    );
-  }
-
-  // Validate verification type
-  const validTypes = [
-    VERIFICATION_TYPE['email-verify'],
-    VERIFICATION_TYPE['password-reset'],
-  ];
-
-  if (!validTypes.includes(verificationType)) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      'Unsupported verification type provided.',
-    );
-  }
-
-  if (!verificationRecord) {
-    throw new ApiError(
-      httpStatus.UNAUTHORIZED,
-      'OTP is invalid or has expired. Please request a new one!',
-    );
-  }
-
-  // Match the OTP
-  if (verificationRecord?.otp !== otp) {
-    throw new ApiError(
-      httpStatus.UNAUTHORIZED,
-      'Incorrect OTP. Please check and try again!',
-    );
-  }
-
-  // If email verification
-  if (payload?.verificationType === VERIFICATION_TYPE['email-verify']) {
-    if (existingUser?.isVerified) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already verified!');
-    }
-
-    // Mark user as verified
-    await Auth.findByIdAndUpdate(existingUser?._id, { isVerified: true });
-
-    // Update verification status
-    await Verification.findByIdAndUpdate(verificationRecord?._id, {
-      status: VERIFICATION_STATUS.verified,
-      verifiedAt: new Date(),
-    });
-
-    return {
-      message: 'Email verified successfully!',
-    };
-  }
-
-  // If password reset
-  if (payload?.verificationType === VERIFICATION_TYPE['password-reset']) {
-    if (!existingUser?.isVerified) {
-      throw new ApiError(httpStatus.FORBIDDEN, 'User account is not verified!');
-    }
-
-    // Allow password reset – no need to mark as verified again
-    await Verification.findByIdAndUpdate(verificationRecord?._id, {
-      status: VERIFICATION_STATUS.verified,
-      verifiedAt: new Date(),
-    });
-
-    // Generate access token for resetting password
-    const jwtPayload = {
-      authId: existingUser?._id,
-      email: existingUser?.email,
-      role: existingUser?.role,
-    };
-
-    const accessToken = createJwtToken(
-      jwtPayload,
-      envConfig.jwtAccessSecret as string,
-      envConfig.jwtAccessExpiresIn as string,
-    );
-
-    return {
-      message: 'OTP verified successfully for password reset.',
-      accessToken,
-    };
-  }
-};
-
 const issueNewAccessToken = async (token: string) => {
   // Check if the token is provided
   if (!token) {
@@ -431,8 +406,8 @@ const issueNewAccessToken = async (token: string) => {
 export const AuthServices = {
   loginUserToDB,
   sendVerificationOtpToDB,
-  resetPasswordToDB,
   verifyOtpToDB,
+  resetPasswordToDB,
   changePasswordToDB,
   issueNewAccessToken,
 };

@@ -13,7 +13,7 @@ const loginUser = catchAsync(async (req, res) => {
 
   // Set refresh token cookie with the appropriate maxAge
   res.cookie('refreshToken', result?.refreshToken, {
-    secure: envConfig.nodeEnv !== 'development',
+    secure: envConfig.nodeEnv === 'production',
     httpOnly: true,
     sameSite: 'none',
     maxAge,

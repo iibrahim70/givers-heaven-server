@@ -1,5 +1,6 @@
 import { Model, ObjectId } from 'mongoose';
 import { TUserRole, TUserStatus } from '../User/user.interface';
+import { TVerificationType } from '../Verification/verification.interface';
 
 export interface IAuth {
   _id: ObjectId;
@@ -11,6 +12,23 @@ export interface IAuth {
   isActive: boolean;
   isBlocked: boolean;
   isVerified: boolean;
+}
+
+export interface ILoginUserPayload {
+  email: string;
+  password: string;
+  rememberMe?: boolean;
+}
+
+export interface ISendVerificationOtpPayload {
+  email: string;
+  verificationType: TVerificationType;
+}
+
+export interface IVerifyOtpToPayload {
+  email: string;
+  otp: number;
+  verificationType: TVerificationType;
 }
 
 // Interface for the Auth model methods
