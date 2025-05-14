@@ -70,7 +70,7 @@ const sendVerificationOtpToDB = async ({
   email,
   verificationType,
 }: ISendVerificationOtpPayload) => {
-  // Step 1: Validate inputs
+  // Step 1: Validate required inputs
   if (!email || !verificationType) {
     throw new ApiError(
       httpStatus.BAD_REQUEST,
@@ -78,18 +78,20 @@ const sendVerificationOtpToDB = async ({
     );
   }
 
-  // Step 2: Fetch user by email
+  // Step 2: Check verification type
+  VerificationValidators.ensureSupportedVerificationType(verificationType);
+
+  // Step 3: Get auth by email
   const existingAuth = await Auth.isUserExistsByEmail(email);
 
+  // Step 4: Check user validity
   UserValidators.ensureUserExists(existingAuth);
   UserValidators.ensureUserIsNotBlocked(existingAuth?.isBlocked);
 
+  // Step 5: Get user details
   const existingUser = await User.findOne({ authId: existingAuth?._id });
 
-  // Step 3: Validate verification type
-  VerificationValidators.ensureSupportedVerificationType(verificationType);
-
-  // Step 4: Prevent redundant email verification
+  // Step 6: Check already verified
   const isAlreadyVerified =
     verificationType === VERIFICATION_TYPE['email-verify'] &&
     existingAuth.isVerified;
@@ -101,11 +103,11 @@ const sendVerificationOtpToDB = async ({
     );
   }
 
-  // Step 5: Generate OTP and expiration (5 mins)
+  // Step 7: Generate OTP and expiry
   const otp = generateOtp();
-  const expireAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes from now
+  const expireAt = new Date(Date.now() + 5 * 60 * 1000); // 5 minutes
 
-  // Step 6: Prepare email template and subject
+  // Step 8: Choose email template
   const isEmailVerification =
     verificationType === VERIFICATION_TYPE['email-verify'];
 
@@ -117,6 +119,7 @@ const sendVerificationOtpToDB = async ({
     ? 'Verify Your Email Address - Givers Heaven'
     : 'Reset Your Password - Givers Heaven';
 
+  // Step 9: Render template content
   const templatePath = path.join(
     process.cwd(),
     'src',
@@ -130,10 +133,10 @@ const sendVerificationOtpToDB = async ({
     otp,
   });
 
-  // Step 7: Send email
+  // Step 10: Send the email
   await sendEmail({ to: existingAuth?.email, subject: emailSubject, html });
 
-  // Step 8: Store OTP in verification collection
+  // Step 11: Save OTP to DB
   await Verification.create({
     authId: existingAuth?._id,
     otp,
@@ -147,51 +150,38 @@ const verifyOtpToDB = async ({
   otp,
   verificationType,
 }: IVerifyOtpToPayload) => {
-  // Fetch user info
+  // Step 1: Validate inputs
+  if (!email || !otp || !verificationType) {
+    throw new ApiError(
+      httpStatus.BAD_REQUEST,
+      'Email, OTP, and verification type are required.',
+    );
+  }
+
+  // Step 2: Check verification type
+  VerificationValidators.ensureSupportedVerificationType(verificationType);
+
+  // Step 3: Fetch user by email
   const existingUser = await Auth.isUserExistsByEmail(email);
 
+  // Step 4: Check user validity
+  UserValidators.ensureUserExists(existingUser);
+  UserValidators.ensureUserIsNotBlocked(existingUser?.isBlocked);
+
+  // Step 5: Get latest OTP record
   const verificationRecord = await Verification.findOne({
     authId: existingUser?._id,
     type: verificationType,
   }).sort({ createdAt: -1 });
 
-  // Handle case where the user does not exist
-  if (!existingUser) {
-    throw new ApiError(
-      httpStatus.NOT_FOUND,
-      'User with this email does not exist!',
-    );
-  }
-
-  // Validate OTP input
-  if (!otp) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      'OTP is required. Please check your email for the code!',
-    );
-  }
-
-  // Validate verification type
-  const supportedTypes = [
-    VERIFICATION_TYPE['email-verify'],
-    VERIFICATION_TYPE['password-reset'],
-  ];
-
-  if (!supportedTypes.includes(verificationType)) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      'Unsupported verification type provided.',
-    );
-  }
-
   if (!verificationRecord) {
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
-      'OTP is invalid or has expired. Please request a new one!',
+      'OTP is invalid or has expired.',
     );
   }
 
-  // Match the OTP
+  // Step 6: Match OTP values
   if (verificationRecord?.otp !== otp) {
     throw new ApiError(
       httpStatus.UNAUTHORIZED,
@@ -199,56 +189,52 @@ const verifyOtpToDB = async ({
     );
   }
 
-  // If email verification
+  // Step 7: Handle email verification
   if (verificationType === VERIFICATION_TYPE['email-verify']) {
     if (existingUser?.isVerified) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Email is already verified!');
+      throw new ApiError(
+        httpStatus.BAD_REQUEST,
+        'This email has already been verified.',
+      );
     }
 
     // Mark user as verified
-    await Auth.findByIdAndUpdate(existingUser?._id, { isVerified: true });
-
-    // Update verification status
-    await Verification.findByIdAndUpdate(verificationRecord?._id, {
-      status: VERIFICATION_STATUS.verified,
-      verifiedAt: new Date(),
-    });
-
-    return {
-      message: 'Email verified successfully!',
-    };
+    await Auth.findByIdAndUpdate(existingUser._id, { isVerified: true });
   }
 
-  // If password reset
-  if (verificationType === VERIFICATION_TYPE['password-reset']) {
-    if (!existingUser?.isVerified) {
-      throw new ApiError(httpStatus.FORBIDDEN, 'User account is not verified!');
-    }
+  // Step 8: Handle password reset verification
+  if (
+    verificationType === VERIFICATION_TYPE['password-reset'] &&
+    !existingUser?.isVerified
+  ) {
+    throw new ApiError(httpStatus.FORBIDDEN, 'User account is not verified!');
+  }
 
-    // Allow password reset – no need to mark as verified again
-    await Verification.findByIdAndUpdate(verificationRecord?._id, {
-      status: VERIFICATION_STATUS.verified,
-      verifiedAt: new Date(),
-    });
+  // Step 9: Update verification status
+  await Verification.findByIdAndUpdate(verificationRecord._id, {
+    status: VERIFICATION_STATUS.verified,
+    verifiedAt: new Date(),
+  });
 
-    // Generate access token for resetting password
-    const jwtPayload = {
+  // Step 10: Generate JWT token
+  const accessToken = createJwtToken(
+    {
       authId: existingUser?._id,
       email: existingUser?.email,
       role: existingUser?.role,
-    };
+    },
+    envConfig.jwtAccessSecret as string,
+    envConfig.jwtAccessExpiresIn as string,
+  );
 
-    const accessToken = createJwtToken(
-      jwtPayload,
-      envConfig.jwtAccessSecret as string,
-      envConfig.jwtAccessExpiresIn as string,
-    );
-
-    return {
-      message: 'OTP verified successfully for password reset.',
-      accessToken,
-    };
-  }
+  // Step 11: Return result
+  return {
+    message:
+      verificationType === VERIFICATION_TYPE['email-verify']
+        ? 'Email verified successfully!'
+        : 'OTP verified successfully for password reset.',
+    accessToken,
+  };
 };
 
 const resetPasswordToDB = async (
