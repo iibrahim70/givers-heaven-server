@@ -2,16 +2,10 @@ import { Router } from 'express';
 import { validateAuth } from '../../middlewares/validateAuth';
 import { USER_ROLE } from '../User/user.constant';
 import { AuthControllers } from './auth.controller';
-import { validateRequest } from '../../middlewares/validateRequest';
-import loginValidationSchema from './auth.validation';
 
 const router = Router();
 
-router.post(
-  '/login',
-  validateRequest(loginValidationSchema),
-  AuthControllers.loginUser,
-);
+router.post('/login', AuthControllers.loginUser);
 
 router.post('/verify-email', AuthControllers.verifyEmail);
 

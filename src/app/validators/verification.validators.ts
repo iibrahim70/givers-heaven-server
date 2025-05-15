@@ -8,7 +8,7 @@ const supportedVerificationTypes = [
   VERIFICATION_TYPE['password-reset'],
 ];
 
-const ensureSupportedVerificationType = (
+export const validateSupportedVerificationType = (
   verificationType: TVerificationType,
 ) => {
   if (!supportedVerificationTypes.includes(verificationType)) {
@@ -17,8 +17,4 @@ const ensureSupportedVerificationType = (
       'Unsupported verification type provided.',
     );
   }
-};
-
-export const VerificationValidators = {
-  ensureSupportedVerificationType,
 };

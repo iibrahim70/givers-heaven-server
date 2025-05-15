@@ -23,8 +23,10 @@ export const envConfig = {
 
   // Security & JWT
   bcryptSaltRounds: process.env.BCRYPT_SALT_ROUNDS,
+  jwtPassResetSecret: process.env.JWT_PASS_RESET_SECRET,
   jwtAccessSecret: process.env.JWT_ACCESS_SECRET,
   jwtRefreshSecret: process.env.JWT_REFRESH_SECRET,
+  jwtPassResetExpiresIn: process.env.JWT_PASS_RESET_EXPIRES_IN,
   jwtAccessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN,
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
 

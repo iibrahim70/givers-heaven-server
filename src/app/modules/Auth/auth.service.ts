@@ -3,7 +3,6 @@ import { ApiError } from '../../errors/ApiError';
 import bcrypt from 'bcrypt';
 import { User } from '../User/user.model';
 import { createJwtToken, verifyJwtToken } from '../../utils/jwt';
-import { JwtPayload } from 'jsonwebtoken';
 import path from 'path';
 import { sendEmail } from '../../helpers/emailService';
 import ejs from 'ejs';
@@ -15,23 +14,27 @@ import {
   VERIFICATION_TYPE,
 } from '../Verification/verification.constant';
 import { envConfig } from '../../config';
-import { UserValidators } from '../../validators/user.validators';
 import {
+  IChangePasswordPayload,
   ILoginUserPayload,
   ISendVerificationOtpPayload,
   IVerifyOtpToPayload,
 } from './auth.interface';
-import { VerificationValidators } from '../../validators/verification.validators';
+import { JwtPayload } from 'jsonwebtoken';
+import {
+  validateSupportedVerificationType,
+  validateTokenNotExpiredDueToPasswordChange,
+  validateUser,
+} from '../../validators';
 
 const loginUserToDB = async ({ email, password }: ILoginUserPayload) => {
-  // Check if the user exists with the given email
+  // Step 2: Check if the user exists by email
   const existingUser = await Auth.isUserExistsByEmail(email);
 
-  UserValidators.ensureUserExists(existingUser);
-  UserValidators.ensureUserIsVerified(existingUser.isVerified);
-  UserValidators.ensureUserIsNotBlocked(existingUser.isBlocked);
+  // Step 3: Validate user's status
+  validateUser(existingUser, { requireVerified: true });
 
-  // Verify the provided password
+  // Step 4: Verify the provided password
   const isPasswordValid = await Auth.isPasswordMatched(
     password,
     existingUser?.password,
@@ -41,25 +44,18 @@ const loginUserToDB = async ({ email, password }: ILoginUserPayload) => {
     throw new ApiError(httpStatus.FORBIDDEN, 'Invalid password provided!');
   }
 
-  // Generate JWT token for user authentication
+  // Step 5: Generate access & refresh JWT tokens
   const jwtPayload = {
     authId: existingUser?._id,
     email: existingUser?.email,
     role: existingUser?.role,
   };
 
-  const accessToken = createJwtToken(
-    jwtPayload,
-    envConfig.jwtAccessSecret as string,
-    envConfig.jwtAccessExpiresIn as string,
-  );
+  const accessToken = createJwtToken(jwtPayload, 'access');
 
-  const refreshToken = createJwtToken(
-    jwtPayload,
-    envConfig.jwtRefreshSecret as string,
-    envConfig.jwtRefreshExpiresIn as string,
-  );
+  const refreshToken = createJwtToken(jwtPayload, 'refresh');
 
+  // Step 6: Return tokens to the caller
   return {
     accessToken,
     refreshToken,
@@ -70,23 +66,14 @@ const sendVerificationOtpToDB = async ({
   email,
   verificationType,
 }: ISendVerificationOtpPayload) => {
-  // Step 1: Validate required inputs
-  if (!email || !verificationType) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      'Email and verification type are required.',
-    );
-  }
-
   // Step 2: Check verification type
-  VerificationValidators.ensureSupportedVerificationType(verificationType);
+  validateSupportedVerificationType(verificationType);
 
-  // Step 3: Get auth by email
+  // Step 3: Check if the user exists by email
   const existingAuth = await Auth.isUserExistsByEmail(email);
 
-  // Step 4: Check user validity
-  UserValidators.ensureUserExists(existingAuth);
-  UserValidators.ensureUserIsNotBlocked(existingAuth?.isBlocked);
+  // Step 4: Validate user's
+  validateUser(existingAuth);
 
   // Step 5: Get user details
   const existingUser = await User.findOne({ authId: existingAuth?._id });
@@ -150,23 +137,15 @@ const verifyOtpToDB = async ({
   otp,
   verificationType,
 }: IVerifyOtpToPayload) => {
-  // Step 1: Validate inputs
-  if (!email || !otp || !verificationType) {
-    throw new ApiError(
-      httpStatus.BAD_REQUEST,
-      'Email, OTP, and verification type are required.',
-    );
-  }
-
   // Step 2: Check verification type
-  VerificationValidators.ensureSupportedVerificationType(verificationType);
+  validateSupportedVerificationType(verificationType);
 
   // Step 3: Fetch user by email
   const existingUser = await Auth.isUserExistsByEmail(email);
 
-  // Step 4: Check user validity
-  UserValidators.ensureUserExists(existingUser);
-  UserValidators.ensureUserIsNotBlocked(existingUser?.isBlocked);
+  // Step 4: Validate user's status
+  validateUserExists(existingUser);
+  validateUserIsNotBlocked(existingUser?.isBlocked);
 
   // Step 5: Get latest OTP record
   const verificationRecord = await Verification.findOne({
@@ -214,18 +193,29 @@ const verifyOtpToDB = async ({
   await Verification.findByIdAndUpdate(verificationRecord._id, {
     status: VERIFICATION_STATUS.verified,
     verifiedAt: new Date(),
+    otp: null,
   });
 
-  // Step 10: Generate JWT token
-  const accessToken = createJwtToken(
-    {
-      authId: existingUser?._id,
-      email: existingUser?.email,
-      role: existingUser?.role,
-    },
-    envConfig.jwtAccessSecret as string,
-    envConfig.jwtAccessExpiresIn as string,
-  );
+  // Step 10: Generate JWT token based on verification type
+  let accessToken;
+
+  if (verificationType === VERIFICATION_TYPE['email-verify']) {
+    accessToken = createJwtToken(
+      {
+        authId: existingUser?._id,
+        email: existingUser?.email,
+        role: existingUser?.role,
+      },
+      'access',
+    );
+  }
+
+  if (verificationType === VERIFICATION_TYPE['password-reset']) {
+    accessToken = createJwtToken(
+      { email: existingUser?.email },
+      'password-reset',
+    );
+  }
 
   // Step 11: Return result
   return {
@@ -241,32 +231,26 @@ const resetPasswordToDB = async (
   token: string,
   payload: { newPassword: string },
 ) => {
-  const { newPassword } = payload;
-
-  if (!token) {
-    throw new ApiError(httpStatus.UNAUTHORIZED, 'You are not authorized!');
-  }
-
+  // Step 2: Verify the token
   const decoded = verifyJwtToken(token, envConfig.jwtAccessSecret as string);
 
-  // Fetch user info
+  // Step 3: Check if the user exists by email
   const existingUser = await Auth.isUserExistsByEmail(decoded?.email);
 
-  // If no user is found with the given email, throw a NOT_FOUND error
-  if (!existingUser) {
-    throw new ApiError(
-      httpStatus.NOT_FOUND,
-      'User with this email does not exist!',
-    );
-  }
+  // Step 4: Validate user's status
+  validateUserExists(existingUser);
+  validateUserIsVerified(existingUser.isVerified);
+  validateUserIsNotBlocked(existingUser.isBlocked);
 
-  if (existingUser?.isBlocked) {
-    throw new ApiError(httpStatus.FORBIDDEN, 'User account is blocked!');
-  }
+  // Step 5: Ensure token was not issued before the password was changed
+  validateTokenNotExpiredDueToPasswordChange(
+    existingUser.passwordChangedAt,
+    decoded.iat as number,
+  );
 
-  // Ensure the new password is different from the current password
+  // Step 6: Ensure the new password is not the same as the current password
   const isSamePassword = await Auth.isPasswordMatched(
-    newPassword,
+    payload?.newPassword,
     existingUser?.password,
   );
 
@@ -277,12 +261,13 @@ const resetPasswordToDB = async (
     );
   }
 
-  // Hash the new password using bcrypt with the envConfigured salt rounds
+  // Step 7: Hash the new password
   const hashPassword = await bcrypt.hash(
     payload?.newPassword,
     Number(envConfig.bcryptSaltRounds),
   );
 
+  // Step 8: Update the user's password
   await User.findByIdAndUpdate(existingUser?._id, {
     password: hashPassword,
     passwordChangedAt: new Date(),
@@ -291,16 +276,14 @@ const resetPasswordToDB = async (
 
 const changePasswordToDB = async (
   user: JwtPayload,
-  payload: { currentPassword: string; newPassword: string },
+  payload: IChangePasswordPayload,
 ) => {
-  const { currentPassword, newPassword } = payload;
-
-  // Fetch user info
+  // Step 1: Get user by email
   const existingUser = await Auth.isUserExistsByEmail(user?.email);
 
-  // Check current password
+  // Step 2: Check current password validity
   const isPasswordValid = await Auth.isPasswordMatched(
-    currentPassword,
+    payload?.currentPassword,
     existingUser?.password,
   );
 
@@ -308,9 +291,9 @@ const changePasswordToDB = async (
     throw new ApiError(httpStatus.FORBIDDEN, 'Invalid password provided!');
   }
 
-  // Ensure the new password is different
+  // Step 3: Ensure new password is different
   const isSamePassword = await Auth.isPasswordMatched(
-    newPassword,
+    payload?.newPassword,
     existingUser?.password,
   );
 
@@ -321,13 +304,13 @@ const changePasswordToDB = async (
     );
   }
 
-  // Hash the new password before saving
+  // Step 4: Hash the new password
   const hashPassword = await bcrypt.hash(
-    newPassword,
+    payload?.newPassword,
     Number(envConfig.bcryptSaltRounds),
   );
 
-  // Update user with new password
+  // Step 5: Update password and timestamp
   await Auth.findByIdAndUpdate(existingUser?._id, {
     password: hashPassword,
     passwordChangedAt: new Date(),
@@ -346,9 +329,9 @@ const issueNewAccessToken = async (token: string) => {
   // Fetch user info
   const existingUser = await Auth.isUserExistsByEmail(decoded?.email);
 
-  UserValidators.ensureUserExists(existingUser);
-  UserValidators.ensureUserIsNotBlocked(existingUser?.isBlocked);
-  UserValidators.ensureTokenNotExpiredDueToPasswordChange(
+  validateUserExists(existingUser);
+  validateUserIsNotBlocked(existingUser?.isBlocked);
+  validateTokenNotExpiredDueToPasswordChange(
     existingUser.passwordChangedAt,
     decoded.iat as number,
   );
@@ -359,11 +342,7 @@ const issueNewAccessToken = async (token: string) => {
     role: existingUser?.role,
   };
 
-  const accessToken = createJwtToken(
-    jwtPayload,
-    envConfig.jwtAccessSecret as string,
-    envConfig.jwtAccessExpiresIn as string,
-  );
+  const accessToken = createJwtToken(jwtPayload, 'access');
 
   return {
     accessToken,

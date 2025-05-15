@@ -31,6 +31,11 @@ export interface IVerifyOtpToPayload {
   verificationType: TVerificationType;
 }
 
+export interface IChangePasswordPayload {
+  currentPassword: string;
+  newPassword: string;
+}
+
 // Interface for the Auth model methods
 export interface AuthModel extends Model<IAuth> {
   isUserExistsByEmail(email: string): Promise<IAuth>; // Check if a user exists by email

@@ -3,7 +3,7 @@ import { ApiError } from '../errors/ApiError';
 import { IAuth } from '../modules/Auth/auth.interface';
 import { Auth } from '../modules/Auth/auth.model';
 
-const ensureUserExists = (user: IAuth) => {
+export const validateUserExists = (user: IAuth) => {
   if (!user) {
     throw new ApiError(
       httpStatus.NOT_FOUND,
@@ -12,7 +12,7 @@ const ensureUserExists = (user: IAuth) => {
   }
 };
 
-const ensureUserIsVerified = (isVerified: IAuth['isVerified']) => {
+export const validateUserIsVerified = (isVerified: IAuth['isVerified']) => {
   if (!isVerified) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
@@ -21,7 +21,7 @@ const ensureUserIsVerified = (isVerified: IAuth['isVerified']) => {
   }
 };
 
-const ensureUserIsNotBlocked = (isBlocked: IAuth['isBlocked']) => {
+export const validateUserIsNotBlocked = (isBlocked: IAuth['isBlocked']) => {
   if (isBlocked) {
     throw new ApiError(
       httpStatus.FORBIDDEN,
@@ -30,7 +30,19 @@ const ensureUserIsNotBlocked = (isBlocked: IAuth['isBlocked']) => {
   }
 };
 
-const ensureTokenNotExpiredDueToPasswordChange = async (
+export const validateUser = (
+  user: IAuth,
+  options: { requireVerified?: boolean } = {},
+) => {
+  validateUserExists(user);
+  validateUserIsNotBlocked(user?.isBlocked);
+
+  if (options?.requireVerified) {
+    validateUserIsVerified(user?.isVerified);
+  }
+};
+
+export const validateTokenNotExpiredDueToPasswordChange = async (
   passwordChangedAt: IAuth['passwordChangedAt'],
   tokenIssuedAt: number,
 ) => {
@@ -46,11 +58,4 @@ const ensureTokenNotExpiredDueToPasswordChange = async (
       'Session expired due to password change.',
     );
   }
-};
-
-export const UserValidators = {
-  ensureUserExists,
-  ensureUserIsVerified,
-  ensureUserIsNotBlocked,
-  ensureTokenNotExpiredDueToPasswordChange,
 };

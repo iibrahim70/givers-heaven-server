@@ -4,14 +4,26 @@ import jwt, { JwtPayload, Secret, SignOptions } from 'jsonwebtoken';
 import { randomBytes } from 'crypto';
 import { ApiError } from '../errors/ApiError';
 import httpStatus from 'http-status';
+import { envConfig } from '../config';
 
-// Function to create JWT token
 export const createJwtToken = (
-  payload: object,
-  secret: Secret,
-  expiresIn: string,
+  payload: Record<string, unknown>,
+  type: 'access' | 'refresh' | 'password-reset',
 ) => {
-  return jwt.sign(payload, secret, { expiresIn } as SignOptions);
+  const secret =
+    type === 'access'
+      ? envConfig.jwtAccessSecret
+      : type === 'refresh'
+        ? envConfig.jwtRefreshSecret
+        : envConfig.jwtPassResetSecret;
+
+  const expiresIn =
+    type === 'access'
+      ? envConfig.jwtAccessExpiresIn
+      : type === 'refresh'
+        ? envConfig.jwtRefreshExpiresIn
+        : '10m';
+  return jwt.sign(payload, secret as string, { expiresIn } as SignOptions);
 };
 
 // Function to verify JWT token

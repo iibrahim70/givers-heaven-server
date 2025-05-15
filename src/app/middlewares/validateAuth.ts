@@ -7,7 +7,11 @@ import { verifyJwtToken } from '../utils/jwt';
 import { Auth } from '../modules/Auth/auth.model';
 import { catchAsync } from '../utils/catchAsync';
 import { envConfig } from '../config';
-import { UserValidators } from '../validators/user.validators';
+import {
+  validateTokenNotExpiredDueToPasswordChange,
+  validateUserIsNotBlocked,
+  validateUserIsVerified,
+} from '../validators';
 
 export const validateAuth = (...requiredRoles: TUserRole[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
@@ -44,11 +48,11 @@ export const validateAuth = (...requiredRoles: TUserRole[]) => {
     }
 
     // Step 5: Check user is verified and active
-    UserValidators.ensureUserIsVerified(existingUser.isVerified);
-    UserValidators.ensureUserIsNotBlocked(existingUser.isBlocked);
+    validateUserIsVerified(existingUser.isVerified);
+    validateUserIsNotBlocked(existingUser.isBlocked);
 
     // Step 6: Check if password was changed after token was issued
-    UserValidators.ensureTokenNotExpiredDueToPasswordChange(
+    validateTokenNotExpiredDueToPasswordChange(
       existingUser.passwordChangedAt,
       decoded.iat as number,
     );
