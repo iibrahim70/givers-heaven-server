@@ -3,6 +3,8 @@ import { format as formatDate } from 'date-fns';
 import winston from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import { envConfig } from '../config';
+import stripAnsi from 'strip-ansi';
+import util from 'util';
 
 // Define log levels with severity
 const levels = {
@@ -20,7 +22,7 @@ const getLogLevel = () => {
 // Filter logs by specific level
 const levelFilter = (level: string) => {
   return winston.format((info) => {
-    return info.level === level ? info : false;
+    return info?.level === level ? info : false;
   })();
 };
 
@@ -32,14 +34,33 @@ winston.addColors({
   http: 'cyan',
 });
 
-// Log format with timestamp and color
-const myLogFormat = winston.format.combine(
+// Log format with timestamp and no color
+const plainLogFormat = winston.format.combine(
   winston.format.timestamp(),
   winston.format.printf(({ level, message, timestamp }) => {
-    const formattedDate = formatDate(
-      new Date(timestamp as string),
-      'EEEE, yyyy-MM-dd HH:mm:ss',
-    );
+    const date = new Date(timestamp as string);
+    const formattedDate = formatDate(date, 'EEEE, yyyy-MM-dd HH:mm:ss');
+
+    // Clean message for file output
+    let cleanMessage = message;
+
+    if (typeof message === 'string') {
+      cleanMessage = stripAnsi(message);
+    } else {
+      cleanMessage = util.inspect(message, { depth: null });
+    }
+
+    return `${level.toUpperCase()}: ${cleanMessage} - [${formattedDate}]`;
+  }),
+);
+
+// Log format with timestamp and color
+const coloredConsoleFormat = winston.format.combine(
+  winston.format.timestamp(),
+  winston.format.printf(({ level, message, timestamp }) => {
+    const date = new Date(timestamp as string);
+    const formattedDate = formatDate(date, 'EEEE, yyyy-MM-dd HH:mm:ss');
+
     return `${level.toUpperCase()}: ${message} - [${formattedDate}]`;
   }),
 
@@ -54,7 +75,7 @@ const createDailyRotateTransport = (logLevel: string) =>
     maxSize: '20m',
     maxFiles: '1d',
     level: logLevel,
-    format: winston.format.combine(levelFilter(logLevel), myLogFormat),
+    format: winston.format.combine(levelFilter(logLevel), plainLogFormat),
   });
 
 // Create and export the logger
@@ -64,7 +85,7 @@ export const appLogger = winston.createLogger({
   transports: [
     // Console output
     new winston.transports.Console({
-      format: myLogFormat,
+      format: coloredConsoleFormat,
     }),
 
     // File outputs by level
