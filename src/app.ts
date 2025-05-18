@@ -5,7 +5,7 @@ import router from './app/routes';
 import { globalErrorHandler } from './app/middlewares/globalErrorHandler';
 import { notFound } from './app/middlewares/notFound';
 import { corsConfig, envConfig, rateLimiter } from './app/config';
-import { morganLogger } from './app/logger';
+import { requestLogger } from './app/logger';
 import helmet from 'helmet';
 import hpp from 'hpp';
 import requestIp from 'request-ip';
@@ -29,7 +29,7 @@ app.use(
 ); // Apply security headers
 app.use(hpp()); // Prevent HTTP Parameter Pollution
 app.use(express.json({ limit: '16kb' })); // Limit JSON payload
-app.use(morganLogger); // Log requests
+app.use(requestLogger); // Log requests
 
 // Root route - API status check
 app.get('/', (req: Request, res: Response) => {

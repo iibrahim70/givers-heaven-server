@@ -5,7 +5,7 @@ import { Server } from 'http';
 import { seedSuperAdmin } from './app/seeds/superAdmin.seeds';
 import { startCronJobs } from './app/cronJobs/startCronJobs';
 import { envConfig } from './app/config';
-import { winstonLogger } from './app/logger';
+import { appLogger } from './app/logger';
 
 let server: Server;
 
@@ -21,7 +21,7 @@ async function main() {
     // Start all cron jobs
     startCronJobs();
 
-    winstonLogger.info(
+    appLogger.info(
       colors.bgGreen.bold(
         `✅ Database Connected! Host: ${connectionInstance?.connection?.host}`,
       ),
@@ -31,7 +31,7 @@ async function main() {
       Number(envConfig.port),
       envConfig.ipAddress as string,
       () => {
-        winstonLogger.info(
+        appLogger.info(
           colors.bgGreen.bold(
             `🚀 Server running on: ${envConfig.ipAddress}:${envConfig.port}`,
           ),
@@ -39,7 +39,7 @@ async function main() {
       },
     );
   } catch (error) {
-    winstonLogger.error(
+    appLogger.error(
       colors.bgCyan.bold(`❌ MongoDB connection error: ${error}`),
     );
     process.exit(1);
@@ -49,7 +49,7 @@ async function main() {
 main();
 
 process.on('unhandledRejection', (error) => {
-  winstonLogger.error(
+  appLogger.error(
     colors.bgYellow.bold(`⚠️ Unhandled rejection, shutting down... ${error}`),
   );
 
@@ -62,7 +62,7 @@ process.on('unhandledRejection', (error) => {
 });
 
 process.on('uncaughtException', (error) => {
-  winstonLogger.error(
+  appLogger.error(
     colors.bgRed.bold(`❌ Uncaught exception: ${error}, shutting down...`),
   );
   process.exit(1);

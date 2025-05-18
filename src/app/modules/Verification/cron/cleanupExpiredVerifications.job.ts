@@ -1,7 +1,7 @@
 import cron from 'node-cron';
 import { Verification } from '../verification.model';
 import colors from 'colors';
-import { winstonLogger } from '../../../logger';
+import { appLogger } from '../../../logger';
 
 export const cleanupExpiredVerificationsJob = () => {
   cron.schedule('*/5 * * * *', async () => {
@@ -12,20 +12,20 @@ export const cleanupExpiredVerificationsJob = () => {
       });
 
       if (result?.deletedCount > 0) {
-        winstonLogger.info(
+        appLogger.info(
           colors.bgGreen.bold(
             `✅ [CRON] Deleted ${result.deletedCount} expired pending verifications.`,
           ),
         );
       } else {
-        winstonLogger.warn(
+        appLogger.warn(
           colors.bgYellow.bold(
             '⚠️ [CRON] No expired pending verifications found for deletion.',
           ),
         );
       }
     } catch (error) {
-      winstonLogger.error(
+      appLogger.error(
         colors.bgRed.bold(
           `❌ [CRON] Error during verification cleanup: ${error}`,
         ),
