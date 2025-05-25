@@ -14,25 +14,22 @@ const levels = {
   http: 3,
 };
 
-// Set log level based on environment
-const getLogLevel = () => {
-  return envConfig.nodeEnv === 'development' ? 'http' : 'warn';
-};
-
-// Filter logs by specific level
-const levelFilter = (level: string) => {
-  return winston.format((info) => {
-    return info?.level === level ? info : false;
-  })();
-};
-
-// Assign colors to each log level
-winston.addColors({
+const levelColors = {
   error: 'red',
   warn: 'yellow',
   info: 'green',
   http: 'cyan',
-});
+};
+
+winston.addColors(levelColors);
+
+// Set log level based on environment
+const getLogLevel = () =>
+  envConfig.nodeEnv === 'development' ? 'http' : 'warn';
+
+// Filter logs by specific level
+const levelFilter = (level: string) =>
+  winston.format((info) => (info.level === level ? info : false))();
 
 // Log format with timestamp and no color
 const plainLogFormat = winston.format.combine(
@@ -42,20 +39,17 @@ const plainLogFormat = winston.format.combine(
     const formattedDate = formatDate(date, 'EEEE, yyyy-MM-dd HH:mm:ss');
 
     // Clean message for file output
-    let cleanMessage = message;
-
-    if (typeof message === 'string') {
-      cleanMessage = stripAnsi(message);
-    } else {
-      cleanMessage = util.inspect(message, { depth: null });
-    }
+    const cleanMessage =
+      typeof message === 'string'
+        ? stripAnsi(message)
+        : util.inspect(message, { depth: null });
 
     return `${level.toUpperCase()}: ${cleanMessage} - [${formattedDate}]`;
   }),
 );
 
 // Log format with timestamp and color
-const coloredConsoleFormat = winston.format.combine(
+const coloredLogFormat = winston.format.combine(
   winston.format.timestamp(),
   winston.format.printf(({ level, message, timestamp }) => {
     const date = new Date(timestamp as string);
@@ -85,7 +79,7 @@ export const appLogger = winston.createLogger({
   transports: [
     // Console output
     new winston.transports.Console({
-      format: coloredConsoleFormat,
+      format: coloredLogFormat,
     }),
 
     // File outputs by level

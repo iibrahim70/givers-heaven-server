@@ -27,17 +27,13 @@ async function main() {
       ),
     );
 
-    server = app.listen(
-      Number(envConfig.port),
-      envConfig.ipAddress as string,
-      () => {
-        appLogger.info(
-          colors.bgGreen.bold(
-            `🚀 Server running on: ${envConfig.ipAddress}:${envConfig.port}`,
-          ),
-        );
-      },
-    );
+    server = app.listen(Number(envConfig.port), () => {
+      appLogger.info(
+        colors.bgGreen.bold(
+          `🚀 Server running on localhost :${envConfig.port}`,
+        ),
+      );
+    });
   } catch (error) {
     appLogger.error(
       colors.bgCyan.bold(`❌ MongoDB connection error: ${error}`),

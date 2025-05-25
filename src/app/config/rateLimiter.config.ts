@@ -5,7 +5,7 @@ import { ApiError } from '../errors/ApiError';
 import httpStatus from 'http-status';
 
 export const rateLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
+  windowMs: 1 * 60 * 1000, // 1 minutes
   max: 20,
   standardHeaders: true,
   legacyHeaders: false,
